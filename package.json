@@ -1,0 +1,38 @@
+{
+  "name": "verid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VERID — True Identity for AI Agents. Built on 0G.",
+  "scripts": {
+    "install:all": "cd contracts && npm install && cd ../frontend && npm install",
+    "compile": "cd contracts && npx hardhat compile",
+    "test": "cd contracts && npx hardhat test",
+    "deploy": "cd contracts && npx hardhat run scripts/deploy.ts --network zg",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "lint": "eslint . --ext .js,.ts,.jsx,.tsx --ignore-pattern node_modules --ignore-pattern dist",
+    "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix --ignore-pattern node_modules --ignore-pattern dist",
+    "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,css}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,css}\" --ignore-path .gitignore",
+    "check-all": "npm run lint && npm run format:check && npm run test && npm run build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.8.4"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  }
+}
