@@ -1,3 +1,3 @@
-export { VeridChain } from './chain';
-export { VeridStorage } from './storage';
-export { VeridCompute } from './compute';
+export { VeriddChain } from './chain';
+export { VeriddStorage } from './storage';
+export { VeriddCompute } from './compute';

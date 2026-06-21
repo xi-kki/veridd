@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { VeridChain } from '../lib/chain';
-import { VeridStorage } from '../lib/storage';
+import { VeriddChain } from '../lib/chain';
+import { VeriddStorage } from '../lib/storage';
 
 interface Props {
-  chain: VeridChain;
+  chain: VeriddChain;
   onCreated: () => void;
   onCancel: () => void;
 }
@@ -37,9 +37,9 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
 
     try {
       // 1. Store profile on 0G Storage (best effort)
-      let profileRoot = 'verid://profiles/default';
+      let profileRoot = 'veridd://profiles/default';
       try {
-        const storage = new VeridStorage();
+        const storage = new VeriddStorage();
         profileRoot = await storage.storeAgentProfile({
           name: name.trim(),
           description: desc.trim(),
@@ -47,7 +47,7 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
           owner: chain.address || '',
           createdAt: Date.now()
         });
-        profileRoot = `verid://profiles/${profileRoot}`;
+        profileRoot = `veridd://profiles/${profileRoot}`;
       } catch (storageErr) {
         console.warn('Storage upload failed, using default URI:', storageErr);
       }

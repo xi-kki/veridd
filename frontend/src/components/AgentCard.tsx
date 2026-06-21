@@ -1,30 +1,30 @@
 import React from 'react';
-import { VeridBadge } from './VeridBadge';
+import { VeriddBadge } from './VeriddBadge';
 
 interface AgentCardProps {
   agentId: number;
   name: string;
   description: string;
-  veridScore: { average: number; total: number };
+  veriddScore: { average: number; total: number };
   isOwner?: boolean;
   onReview?: (id: number) => void;
 }
 
 /**
- * Agent Card — displays an agent's VERID score, info, and actions
+ * Agent Card — displays an agent's VERIDD score, info, and actions
  * Design: glass card with hover glow, responsive grid
  */
 export const AgentCard: React.FC<AgentCardProps> = ({
-  agentId, name, description, veridScore, isOwner, onReview
+  agentId, name, description, veriddScore, isOwner, onReview
 }) => {
   return (
     <div className="glass-card rounded-xl p-5 hover:border-violet-500/40 transition-all 
       duration-300 hover:shadow-lg hover:shadow-violet-500/10 group animate-slide-up">
       
       <div className="flex items-start gap-4">
-        {/* VERID Badge */}
+        {/* Veridd Badge */}
         <div className="flex-shrink-0">
-          <VeridBadge score={veridScore.average} totalReviews={veridScore.total} size="sm" />
+          <VeriddBadge score={veriddScore.average} totalReviews={veriddScore.total} size="sm" />
         </div>
 
         {/* Agent Info */}
@@ -45,14 +45,14 @@ export const AgentCard: React.FC<AgentCardProps> = ({
           </p>
 
           {/* Action Button */}
-          {!isOwner && onReview && (
+          {onReview && (
             <button
               onClick={() => onReview(agentId)}
               className="text-xs px-3 py-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600/30 
                 text-violet-400 border border-violet-500/30 transition-all 
                 hover:border-violet-400/50 cursor-pointer font-medium"
             >
-              Review on 0G Compute →
+              Submit Action →
             </button>
           )}
         </div>

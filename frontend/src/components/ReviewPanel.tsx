@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { VeridChain } from '../lib/chain';
-import { VeridCompute, ReviewResult } from '../lib/compute';
-import { VeridStorage } from '../lib/storage';
-import { VeridBadge } from './VeridBadge';
+import { VeriddChain } from '../lib/chain';
+import { VeriddCompute, ReviewResult } from '../lib/compute';
+import { VeriddStorage } from '../lib/storage';
+import { VeriddBadge } from './VeriddBadge';
 
 interface Props {
   agentId: number;
-  chain: VeridChain;
-  onSubmitted: () => void;
+  chain: VeriddChain;
+  onSubmitted: (score?: number) => void;
   onCancel: () => void;
 }
 
@@ -73,9 +73,12 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
     setLoading(true);
     try {
       const action = DEMO_ACTIONS[idx];
-      const compute = new VeridCompute();
+      const compute = new VeriddCompute();
       const result = await compute.reviewAction({
-        agentName: agentName || `Agent #${agentId}`, ...action
+        agentName: agentName || `Agent #${agentId}`,
+        actionType: action.type,
+        input: action.input,
+        output: action.output,
       });
       setReview(result);
 
@@ -98,7 +101,7 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
 
     try {
       const action = DEMO_ACTIONS[0];
-      const storage = new VeridStorage();
+      const storage = new VeriddStorage();
 
       // Store action + review on 0G Storage
       const [actionRoot, reviewRoot] = await Promise.all([
@@ -113,14 +116,13 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
         })
       ]);
 
-      // Submit on-chain
       await chain.submitReview(
         agentId, review.score,
         actionRoot, reviewRoot,
         review.reasoning.slice(0, 100)
       );
 
-      onSubmitted();
+      onSubmitted(review.score);
     } catch (err: any) {
       setError(err.message || 'Failed to submit. Check your wallet.');
       setStep('result');
@@ -133,7 +135,7 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-lg font-bold text-white">VERID Review</h2>
+            <h2 className="text-lg font-bold text-white">VERIDD Review</h2>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="status-orb thinking" />
               <p className="text-xs text-gray-400">{agentName || `Agent #${agentId}`}</p>
@@ -218,7 +220,7 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
             {/* Score Display */}
             <div className="glass-card rounded-xl p-5">
               <div className="flex items-center gap-5 mb-4">
-                <VeridBadge score={review.score} totalReviews={1} size="sm" />
+                <VeriddBadge score={review.score} totalReviews={1} size="sm" />
                 <div>
                   <p className="text-white font-bold text-lg">Score: {review.score}/5</p>
                   <p className="text-[11px] text-gray-500">

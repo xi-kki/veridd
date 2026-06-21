@@ -1,5 +1,5 @@
 {
-  "name": "verid-contracts",
+  "name": "veridd-contracts",
   "version": "1.0.0",
   "scripts": {
     "compile": "hardhat compile",
@@ -9,11 +9,11 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "hardhat": "^2.22.0",
-    "typescript": "^5.4.0",
-    "ts-node": "^10.9.0"
+    "ts-node": "^10.9.0",
+    "typescript": "^5.4.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
     "dotenv": "^16.4.0"
   }
 }

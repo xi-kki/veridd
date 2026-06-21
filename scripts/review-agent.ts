@@ -1,6 +1,6 @@
 /**
- * VERID — Peer Review Agent (runs on 0G Compute)
- * Scores agent actions and returns a VERID score 1-5
+ * VERIDD — Peer Review Agent (runs on 0G Compute)
+ * Scores agent actions and returns a VERIDD score 1-5
  * 
  * Usage: npx ts-node scripts/review-agent.ts --agent-id=1
  */
@@ -16,7 +16,7 @@ interface ReviewOutput {
   flags: string[]; reviewedAt: number;
 }
 
-const PROMPT = `You are a VERID reviewer scoring AI agent actions 1-5.
+const PROMPT = `You are a VERIDD reviewer scoring AI agent actions 1-5.
 Score based on: correctness, quality, safety, efficiency.
 1=Harmful 2=Below 3=Met expectations 4=Above 5=Exceptional
 Respond JSON: {score, reasoning, confidence, flags}`;

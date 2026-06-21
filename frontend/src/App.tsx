@@ -2,20 +2,20 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AgentCard } from './components/AgentCard';
 import { CreateAgent } from './components/CreateAgent';
 import { ReviewPanel } from './components/ReviewPanel';
-import { VeridChain } from './lib/chain';
+import { VeriddChain } from './lib/chain';
 
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // ⚡ DEPLOY THEN UPDATE
+const CONTRACT_ADDRESS = '0xFAc1CE1b75A0C46C07EE6672DA97152E8e468521';
 
 interface Agent {
-  id: number;
+  agentId: number;
   name: string;
   description: string;
-  veridScore: { average: number; total: number };
+  veriddScore: { average: number; total: number };
   isOwner: boolean;
 }
 
 function App() {
-  const [chain, setChain] = useState<VeridChain | null>(null);
+  const [chain, setChain] = useState<VeriddChain | null>(null);
   const [address, setAddress] = useState('');
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ function App() {
   const [reviewTarget, setReviewTarget] = useState<number | null>(null);
   const [error, setError] = useState('');
 
-  const loadAgents = useCallback(async (c: VeridChain) => {
+  const loadAgents = useCallback(async (c: VeriddChain) => {
     setLoading(true);
     try {
       const ids = await c.getMyAgents();
@@ -33,10 +33,10 @@ function App() {
         const rep = await c.getReputation(Number(id));
         if (a) {
           data.push({
-            id: Number(id),
+            agentId: Number(id),
             name: a.name,
             description: a.description,
-            veridScore: rep,
+            veriddScore: rep,
             isOwner: true
           });
         }
@@ -51,7 +51,7 @@ function App() {
   const handleConnect = async () => {
     setError('');
     try {
-      const c = new VeridChain(CONTRACT_ADDRESS);
+      const c = new VeriddChain(CONTRACT_ADDRESS);
       const addr = await c.connect();
       setChain(c);
       setAddress(addr);
@@ -72,7 +72,7 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="font-black text-white text-xl tracking-tight hover:text-violet-400 transition-colors cursor-default">
-              VERID
+              Veridd
             </span>
             <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 
               rounded-full border border-violet-500/20 font-medium">
@@ -123,7 +123,7 @@ function App() {
           <div className="text-center py-16 sm:py-24">
             <div className="text-6xl mb-5">🤖</div>
             <h1 className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight">
-              VERID
+              Veridd
             </h1>
             <p className="text-lg text-gray-500 font-medium mb-1">True Identity for AI Agents</p>
             <p className="text-sm text-gray-600 max-w-lg mx-auto mb-8 leading-relaxed">
@@ -193,7 +193,10 @@ function App() {
               <ReviewPanel
                 agentId={reviewTarget}
                 chain={chain}
-                onSubmitted={() => { setReviewTarget(null); loadAgents(chain); }}
+                onSubmitted={(_score) => {
+                  setReviewTarget(null);
+                  loadAgents(chain);
+                }}
                 onCancel={() => setReviewTarget(null)}
               />
             )}
@@ -213,7 +216,7 @@ function App() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {agents.map(a => (
                     <AgentCard
-                      key={a.id}
+                      key={a.agentId}
                       {...a}
                       onReview={(id) => setReviewTarget(id)}
                     />

@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title VERID — Verified Identity Protocol
+ * @title Veridd — Verified Decentralized Digital ID
  * @notice Onchain credit score for AI agents
  * 
- * VERID = Veri (Verify / Veritas = Truth) + ID (Identity)
- * "Identity rooted in truth"
+ * Veridd = Veri (Verify / Veritas) + dd (Decentralized Digital)
+ * "Verified Decentralized Digital Identity"
  * 
  * Uses 0G's unique stack:
  *   • 0G Chain → Agentic ID (ERC-721) + reputation state
@@ -17,7 +17,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VERIDReputation is ERC721, Ownable {
+contract VeriddReputation is ERC721, Ownable {
     struct Agent {
         string name;
         string metadataURI;
@@ -46,7 +46,7 @@ contract VERIDReputation is ERC721, Ownable {
     event ReviewSubmitted(uint256 indexed agentId, uint256 score, address indexed reviewer, string actionRoot, uint256 timestamp);
     event ReputationUpdated(uint256 indexed agentId, uint256 averageScore, uint256 totalReviews);
 
-    constructor() ERC721("VERID Reputation", "VERID") Ownable(msg.sender) {}
+    constructor() ERC721("Veridd Reputation", "VERIDD") Ownable(msg.sender) {}
 
     function createAgent(string memory name, string memory description, string memory metadataURI) external returns (uint256) {
         require(bytes(name).length > 0, "Name required");
@@ -68,7 +68,8 @@ contract VERIDReputation is ERC721, Ownable {
         require(agents[agentId].exists, "Agent does not exist");
         require(score >= 1 && score <= 5, "Score must be 1-5");
         require(bytes(actionRoot).length > 0, "Action root required");
-        require(ownerOf(agentId) != msg.sender, "Cannot self-review");
+        // REMOVED for Zero Cup demo — self-review enabled so judges can test the full flow
+        // require(ownerOf(agentId) != msg.sender, "Cannot self-review");
         
         // Checks-Effects-Interactions: state before event emission
         agents[agentId].totalReviews++;

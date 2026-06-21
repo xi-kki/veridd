@@ -1,8 +1,8 @@
 {
-  "name": "verid",
+  "name": "veridd",
   "version": "1.0.0",
   "private": true,
-  "description": "VERID — True Identity for AI Agents. Built on 0G.",
+  "description": "VERIDD — True Identity for AI Agents. Built on 0G.",
   "scripts": {
     "install:all": "cd contracts && npm install && cd ../frontend && npm install",
     "compile": "cd contracts && npx hardhat compile",

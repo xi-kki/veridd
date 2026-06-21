@@ -1,15 +1,15 @@
-# 🤖 VERID — True Identity for AI Agents
+# 🤖 VERIDD — True Identity for AI Agents
 
 > **Built for the 0G Zero Cup 2026**
 >
-> VERID = Veri (Verify / Veritas = Truth) + ID (Identity)
+> VERIDD = Veri (Verify / Veritas = Truth) + ID (Identity)
 > *"Verified Identity" | "True Identity" | "The Real One"*
 
 ---
 
 ## The 30-Second Pitch
 
-**VERID is a credit score for AI agents, built on 0G.** Every agent gets an onchain identity via **Agentic ID**. Every action they take is reviewed by peer agents running on **0G Compute**. Their reputation updates immutably on **0G Storage** with full Merkle-proof verification.
+**VERIDD is a credit score for AI agents, built on 0G.** Every agent gets an onchain identity via **Agentic ID**. Every action they take is reviewed by peer agents running on **0G Compute**. Their reputation updates immutably on **0G Storage** with full Merkle-proof verification.
 
 Good agents rise. Bad agents get exposed. **Anyone can verify every action.**
 
@@ -17,9 +17,9 @@ Good agents rise. Bad agents get exposed. **Anyone can verify every action.**
 
 ## Why This Can't Exist Anywhere Else
 
-| 0G Product | What VERID Uses It For | Why Unique |
+| 0G Product | What VERIDD Uses It For | Why Unique |
 |-----------|----------------------|------------|
-| **Agentic ID (ERC-7857)** | Onchain identity for each agent — the VERID score IS the agent's identity token | No other chain has native agent identity NFTs |
+| **Agentic ID (ERC-7857)** | Onchain identity for each agent — the VERIDD score IS the agent's identity token | No other chain has native agent identity NFTs |
 | **0G Storage** | Full action logs + review reasoning with Merkle tree proofs | Centralized AI can't offer cryptographic proof of actions |
 | **0G Compute** | Decentralized peer review agents analyze and score actions | Not one company judging agents — truly decentralized |
 | **0G Chain** | Immutable score storage + Agentic ID minting | 600ms block times for real-time agent operations |
@@ -30,7 +30,7 @@ Good agents rise. Bad agents get exposed. **Anyone can verify every action.**
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                      VERID                            │
+│                      VERIDD                            │
 ├──────────┬──────────┬──────────┬─────────────────────┤
 │ 0G Chain │0G Storage│0G Compute│    Agentic ID       │
 │(Identity │(Merkle-  │(Peer     │   (ERC-7857         │
@@ -44,7 +44,7 @@ Good agents rise. Bad agents get exposed. **Anyone can verify every action.**
 2. **Submit Action** → Stored on 0G Storage with Merkle tree
 3. **Peer Review** → 0G Compute agent analyzes and scores 1-5
 4. **Store Proof** → Full action + review on 0G Storage
-5. **Update VERID** → Score written on-chain, reputation recalculated
+5. **Update VERIDD** → Score written on-chain, reputation recalculated
 6. **Verify** → Anyone queries reputation + verifies via Merkle root
 
 ---
@@ -95,7 +95,7 @@ npx ts-node scripts/review-agent.ts --agent-id=1
 
 ---
 
-## 📊 VERID Score Tiers
+## 📊 VERIDD Score Tiers
 
 | Score | Tier | Label | Meaning |
 |-------|------|-------|---------|
@@ -124,7 +124,7 @@ npx ts-node scripts/review-agent.ts --agent-id=1
 
 | Detail | Info |
 |--------|------|
-| **Project** | VERID — True Identity for AI Agents |
+| **Project** | VERIDD — True Identity for AI Agents |
 | **Products Used** | 0G Chain + 0G Storage + 0G Compute + Agentic ID |
 | **Team** | [Your Name] |
 | **Demo** | [Link to 2-min video] |

@@ -1,17 +1,17 @@
 import React from 'react';
 
-interface VeridBadgeProps {
+interface VeriddBadgeProps {
   score: number;
   totalReviews: number;
   size?: 'sm' | 'md' | 'lg';
 }
 
 /**
- * VERID Score Badge — visual reputation indicator
+ * Veridd Score Badge — visual reputation indicator
  * Color-coded tiers from Elite (purple) to Risky (red)
  * Design: gradient circle with tier label + review count
  */
-export const VeridBadge: React.FC<VeridBadgeProps> = ({ score, totalReviews, size = 'md' }) => {
+export const VeriddBadge: React.FC<VeriddBadgeProps> = ({ score, totalReviews, size = 'md' }) => {
   const getTier = () => {
     if (score >= 4.5) return {
       color: 'from-violet-500 to-purple-700',
@@ -59,7 +59,7 @@ export const VeridBadge: React.FC<VeridBadgeProps> = ({ score, totalReviews, siz
           flex items-center justify-center transition-all duration-300 group-hover:border-gray-600`}>
           <span className="text-gray-500 font-bold text-2xl">?</span>
         </div>
-        <span className={`${labelSizes[size]} text-gray-500 font-medium`}>No VERID yet</span>
+        <span className={`${labelSizes[size]} text-gray-500 font-medium`}>No score yet</span>
         <span className="text-[10px] text-gray-700">Unrated agent</span>
       </div>
     );

@@ -1,7 +1,7 @@
-# VERID — True Identity for AI Agents
+# VERIDD — True Identity for AI Agents
 
 ## The 30-Second Story
-"VERID is a credit score for AI agents, built on 0G. Every agent gets an onchain identity via Agentic ID. Every action is reviewed by peer agents on 0G Compute. Reputation updates immutably on 0G Storage with Merkle proofs. Good agents rise, bad agents get exposed, and anyone can verify every action. VERID = Verified Identity."
+"VERIDD is a credit score for AI agents, built on 0G. Every agent gets an onchain identity via Agentic ID. Every action is reviewed by peer agents on 0G Compute. Reputation updates immutably on 0G Storage with Merkle proofs. Good agents rise, bad agents get exposed, and anyone can verify every action. VERIDD = Verified Identity."
 
 ## Tech Stack
 - **Smart Contracts**: Solidity ^0.8.20, Hardhat → 0G Galileo (Chain ID: 16602)
@@ -33,7 +33,7 @@ npx hardhat run scripts/deploy.ts --network zg
 ```
 
 ## Design Tokens
-- Colors: verid (violet scale), og (chain/storage/compute/agentic)
+- Colors: veridd (violet scale), og (chain/storage/compute/agentic)
 - Spacing: Tailwind default scale
 - Fonts: Inter (body), JetBrains Mono (code)
 - Animations: slide-up, fade-in, pulse-slow

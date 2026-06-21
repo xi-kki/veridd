@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  console.log("🚀 Deploying VERIDReputation to 0G Galileo Testnet...");
+  console.log("🚀 Deploying VeriddReputation to 0G Galileo Testnet...");
   console.log("⛓️  Chain ID: 16602");
   console.log("🔗 RPC: https://evmrpc-testnet.0g.ai\n");
 
@@ -16,18 +16,14 @@ async function main() {
     process.exit(1);
   }
 
-  const VERID = await ethers.getContractFactory("VERIDReputation");
-  const contract = await VERID.deploy({
-    gasLimit: 2_000_000,
-    maxFeePerGas: ethers.parseUnits("50", "gwei"),
-    maxPriorityFeePerGas: ethers.parseUnits("2", "gwei"),
-  });
+  const Veridd = await ethers.getContractFactory("VeriddReputation");
+  const contract = await Veridd.deploy();
   await contract.waitForDeployment();
 
   const address = await contract.getAddress();
   const receipt = await contract.deploymentTransaction()?.wait();
   
-  console.log(`\n✅ VERID deployed successfully!`);
+  console.log(`\n✅ Veridd deployed successfully!`);
   console.log(`📄 Contract: ${address}`);
   console.log(`⛽ Gas used: ${receipt?.gasUsed.toString() || "N/A"}`);
   console.log(`🔗 Explorer: https://chainscan-galileo.0g.ai/address/${address}`);

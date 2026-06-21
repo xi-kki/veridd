@@ -1,5 +1,5 @@
 /**
- * VERID — 0G Chain Integration
+ * Veridd — 0G Chain Integration
  * Agentic ID (ERC-721) + reputation state on 0G Galileo Testnet
  * 
  * Edge cases handled:
@@ -11,6 +11,12 @@
  *   - Input validation before sending tx
  */
 import { ethers } from 'ethers';
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 const CONTRACT_ABI = [
   'function createAgent(string name, string description, string metadataURI) returns (uint256)',
@@ -26,7 +32,7 @@ const CONTRACT_ABI = [
 ];
 
 const ZG_NETWORK = {
-  chainId: '0x40D6',
+  chainId: '0x40DA',
   chainName: '0G Galileo Testnet',
   nativeCurrency: { name: '0G', symbol: '0G', decimals: 18 },
   rpcUrls: ['https://evmrpc-testnet.0g.ai'],
@@ -35,7 +41,7 @@ const ZG_NETWORK = {
 
 const TX_TIMEOUT = 120_000; // 2 minutes
 
-export class VeridChain {
+export class VeriddChain {
   private provider: ethers.BrowserProvider | null = null;
   private signer: ethers.Signer | null = null;
   private contract: ethers.Contract | null = null;
@@ -52,26 +58,34 @@ export class VeridChain {
       throw new Error('No wallet found. Install MetaMask or OKX Wallet to continue.');
     }
 
+    // Try to switch to 0G Galileo. If it fails, warn but still try to connect.
     try {
-      // Switch to 0G Galileo
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: ZG_NETWORK.chainId }]
-        });
-      } catch (switchError: any) {
-        if (switchError.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: ZG_NETWORK.chainId }]
+      });
+    } catch (switchError: any) {
+      if (switchError.code === 4902) {
+        // Chain not added yet — try to add it
+        try {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [ZG_NETWORK]
           });
-        } else if (switchError.code === 4001) {
-          throw new Error('Network switch cancelled. Please switch to 0G Galileo Testnet manually.');
-        } else {
-          throw switchError;
+        } catch (addError: any) {
+          console.warn('Could not add network:', addError.message);
+          throw new Error('Please add 0G Galileo Testnet to MetaMask manually.\nNetwork: 0G Galileo Testnet\nRPC: https://evmrpc-testnet.0g.ai\nChain ID: 16602\nSymbol: 0G');
         }
+      } else if (switchError.code === 4001) {
+        console.warn('Network switch rejected, proceeding with current network...');
+        // Don't throw — let the user switch manually
+      } else {
+        // Network may already exist but switch failed — try connecting anyway
+        console.warn('Network switch failed, attempting connection on current network:', switchError.message);
       }
+    }
 
+    try {
       this.provider = new ethers.BrowserProvider(window.ethereum);
       this.signer = await this.provider.getSigner();
       this.contract = new ethers.Contract(this.contractAddress, CONTRACT_ABI, this.signer);
@@ -81,7 +95,7 @@ export class VeridChain {
       if (err.code === 4001) {
         throw new Error('Connection cancelled. Please connect your wallet to continue.');
       }
-      throw err;
+      throw new Error('Failed to connect: ' + err.message);
     }
   }
 
@@ -126,7 +140,7 @@ export class VeridChain {
     }
   }
 
-  /** Get an agent's VERID score */
+  /** Get an agent's VERIDD score */
   async getReputation(agentId: number | bigint): Promise<{ average: number; total: number }> {
     if (!this.contract) throw new Error('Not connected');
     try {
