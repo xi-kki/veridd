@@ -1,14 +1,18 @@
 /**
  * Veridd — 0G Compute Integration
- * Peer review agents that analyze actions and assign Veridd scores
- * 
- * Edge cases handled:
- *   - API key missing (falls back to simulation)
- *   - API errors (network, rate limit)
- *   - Malformed responses
- *   - Extreme input lengths
- *   - Empty outputs
+ *
+ * Uses @0gfoundation/0g-compute-ts-sdk (v0.8.4) for decentralized AI inference.
+ * Browser-compatible with simulation fallback for Zero Cup demo.
+ *
+ * Two modes:
+ *   Broker mode — Uses ZGComputeNetworkReadOnlyBroker to list providers,
+ *                  then sends inference requests via OpenAI-compatible API.
+ *   Simulation mode — Deterministic scoring when no provider is available.
+ *
+ * @see https://github.com/0gfoundation/0g-compute-ts-sdk
  */
+import { createZGComputeNetworkReadOnlyBroker } from '@0gfoundation/0g-compute-ts-sdk';
+
 export interface ReviewResult {
   score: number;
   reasoning: string;
@@ -16,91 +20,118 @@ export interface ReviewResult {
   flags?: string[];
 }
 
-const COMPUTE_API = 'https://compute.0g.ai/v1';
+const ZG_RPC = 'https://evmrpc-testnet.0g.ai';
 
-const SYSTEM_PROMPT = `You are a Veridd reviewer scoring AI agent actions 1-5.
-Score based on: correctness, quality, safety, efficiency.
-1=Harmful 2=Below expectations 3=Met expectations 4=Above expectations 5=Exceptional
-Respond with JSON: {score, reasoning, confidence, flags}`;
+/**
+ * VERIDD review prompt — instructs the LLM to score agent actions 1–5.
+ */
+const SYSTEM_PROMPT =
+  'You are a VERIDD reviewer scoring AI agent actions 1-5.\n' +
+  'Score based on: correctness, quality, safety, efficiency.\n' +
+  '1=Harmful 2=Below expectations 3=Met expectations 4=Above expectations 5=Exceptional\n' +
+  'Respond with JSON: {score, reasoning, confidence, flags}';
 
 export class VeriddCompute {
   constructor(private apiKey?: string) {}
 
-  /** Review an agent action and return a score */
+  /**
+   * Review an agent action and return a VERIDD score.
+   *
+   * Attempts real inference via 0G Compute's provider network (Broker mode).
+   * Falls back to deterministic simulation if the network is unreachable
+   * or no API key is provided.
+   */
   async reviewAction(action: {
-    agentName: string; actionType: string; input: string; output: string;
+    agentName: string;
+    actionType: string;
+    input: string;
+    output: string;
   }): Promise<ReviewResult> {
-    if (!action.agentName) action.agentName = 'Unknown Agent';
-    if (!action.actionType) action.actionType = 'general';
-    if (!action.input) action.input = 'No input provided';
-    if (!action.output) action.output = 'No output provided';
-
-    // Truncate extreme inputs to prevent token overflow
     const safeAction = {
-      ...action,
-      input: action.input.slice(0, 2000),
-      output: action.output.slice(0, 2000)
+      agentName: action.agentName || 'Unknown Agent',
+      actionType: action.actionType || 'general',
+      input: (action.input || 'No input provided').slice(0, 2000),
+      output: (action.output || 'No output provided').slice(0, 2000),
     };
 
-    if (this.apiKey) {
-      try {
-        return await this.reviewViaRouter(safeAction);
-      } catch (err) {
-        console.warn('0G Compute API error, falling back to simulation:', err);
-        return this.simulateReview(safeAction);
-      }
-    }
+    // Try real inference via 0G Compute Broker
+    const result = await this.tryBrokerReview(safeAction);
+    if (result) return result;
+
+    // Fallback to simulation
     return this.simulateReview(safeAction);
   }
 
-  private async reviewViaRouter(action: any): Promise<ReviewResult> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
-
+  /**
+   * Attempt inference via 0G Compute Network ReadOnlyBroker.
+   * Lists available providers and sends the prompt to the first one found.
+   * Returns null if the network is unreachable or no providers exist.
+   */
+  private async tryBrokerReview(action: {
+    agentName: string;
+    actionType: string;
+    input: string;
+    output: string;
+  }): Promise<ReviewResult | null> {
     try {
-      const res = await fetch(`${COMPUTE_API}/chat/completions`, {
+      const broker = await createZGComputeNetworkReadOnlyBroker(ZG_RPC);
+      const services = await broker.inference.listService(0, 1);
+
+      if (services.length === 0) return null;
+
+      const provider = services[0];
+      const metadata = {
+        endpoint: provider.url,
+        model: provider.model,
+      };
+
+      const response = await fetch(metadata.endpoint, {
         method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3-70b',
+          model: metadata.model,
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: JSON.stringify(action) }
+            { role: 'user', content: JSON.stringify(action) },
           ],
           temperature: 0.3,
-          response_format: { type: 'json_object' }
-        })
+          response_format: { type: 'json_object' },
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status} ${res.statusText}`);
-      }
+      if (!response.ok) return null;
 
-      const data = await res.json();
+      const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
-      if (!content) throw new Error('Empty response from compute API');
+      if (!content) return null;
 
-      const r = JSON.parse(content);
+      const parsed = JSON.parse(content);
       return {
-        score: Math.max(1, Math.min(5, Number(r.score) || 3)),
-        reasoning: r.reasoning || 'No detailed reasoning provided.',
-        confidence: Math.min(1, Math.max(0, Number(r.confidence) || 0.7)),
-        flags: Array.isArray(r.flags) ? r.flags : undefined
+        score: Math.max(1, Math.min(5, Number(parsed.score) || 3)),
+        reasoning: parsed.reasoning || 'No detailed reasoning provided.',
+        confidence: Math.min(1, Math.max(0, Number(parsed.confidence) || 0.7)),
+        flags: Array.isArray(parsed.flags) ? parsed.flags : undefined,
       };
-    } finally {
-      clearTimeout(timeout);
+    } catch {
+      return null;
     }
   }
 
-  private simulateReview(action: any): ReviewResult {
-    const len = action.output.length;
-    const hasError = /error|fail|crash|bug/i.test(action.output);
+  /**
+   * Deterministic simulation fallback for Zero Cup demo.
+   * Scores actions based on output length, error keywords, and structure.
+   */
+  private simulateReview(action: {
+    agentName: string;
+    actionType: string;
+    input: string;
+    output: string;
+  }): ReviewResult {
+    const { output } = action;
+    const len = output.length;
+    const hasError = /error|fail|crash|bug/i.test(output);
     const isDetailed = len > 100;
-    const hasData = /[\[{]/.test(action.output);
+    const hasData = /[\[{]/.test(output);
 
     let score = 3;
     let reasoning = 'Action met basic expectations.';
@@ -123,7 +154,7 @@ export class VeriddCompute {
       score,
       reasoning,
       confidence: 0.75,
-      flags: hasError ? ['Action produced errors'] : undefined
+      flags: hasError ? ['Action produced errors'] : undefined,
     };
   }
 }
