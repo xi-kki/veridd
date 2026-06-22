@@ -16,7 +16,6 @@
  */
 
 import { ethers } from 'ethers';
-import { Indexer } from '@0gfoundation/0g-storage-ts-sdk';
 
 // ───── Constants ────────────────────────────────────────────────────────────
 
@@ -162,22 +161,15 @@ export class VeriddStorageSimulator {
  * needs a Node.js backend (ZgFile.fromFilePath is filesystem-only).
  */
 export class VeriddStorageIndexer {
-  private indexer: Indexer | null = null;
   private readonly sim: VeriddStorageSimulator;
 
   constructor() {
     this.sim = new VeriddStorageSimulator();
-    try {
-      this.indexer = new Indexer(INDEXER_URL);
-    } catch {
-      // Indexer init may fail in browser environments without CORS support.
-      // The simulated fallback handles this gracefully.
-    }
   }
 
   /** Whether the Indexer client initialised successfully. */
   get ready(): boolean {
-    return this.indexer !== null;
+    return false;
   }
 
   /**

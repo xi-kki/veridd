@@ -7,3 +7,5 @@ artifacts/
 typechain-types/
 coverage/
 *.log
+frontend/nul
+frontend/test.html

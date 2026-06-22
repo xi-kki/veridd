@@ -1,17 +1,11 @@
 /**
  * Veridd — 0G Compute Integration
  *
- * Uses @0gfoundation/0g-compute-ts-sdk (v0.8.4) for decentralized AI inference.
- * Browser-compatible with simulation fallback for Zero Cup demo.
- *
+ * Browser-compatible AI inference for peer review scoring.
  * Two modes:
- *   Broker mode — Uses ZGComputeNetworkReadOnlyBroker to list providers,
- *                  then sends inference requests via OpenAI-compatible API.
- *   Simulation mode — Deterministic scoring when no provider is available.
- *
- * @see https://github.com/0gfoundation/0g-compute-ts-sdk
+ *   Router mode — Calls 0G Compute Router API (needs API key)
+ *   Simulation mode — Deterministic scoring fallback for demo
  */
-import { createZGComputeNetworkReadOnlyBroker } from '@0gfoundation/0g-compute-ts-sdk';
 
 export interface ReviewResult {
   score: number;
@@ -19,8 +13,6 @@ export interface ReviewResult {
   confidence: number;
   flags?: string[];
 }
-
-const ZG_RPC = 'https://evmrpc-testnet.0g.ai';
 
 /**
  * VERIDD review prompt — instructs the LLM to score agent actions 1–5.
@@ -63,9 +55,8 @@ export class VeriddCompute {
   }
 
   /**
-   * Attempt inference via 0G Compute Network ReadOnlyBroker.
-   * Lists available providers and sends the prompt to the first one found.
-   * Returns null if the network is unreachable or no providers exist.
+   * Attempt inference via 0G Compute — uses the Router API if an API key is set.
+   * Returns null if no API key is configured, falling back to simulation.
    */
   private async tryBrokerReview(action: {
     agentName: string;
@@ -73,23 +64,16 @@ export class VeriddCompute {
     input: string;
     output: string;
   }): Promise<ReviewResult | null> {
+    if (!this.apiKey) return null;
     try {
-      const broker = await createZGComputeNetworkReadOnlyBroker(ZG_RPC);
-      const services = await broker.inference.listService(0, 1);
-
-      if (services.length === 0) return null;
-
-      const provider = services[0];
-      const metadata = {
-        endpoint: provider.url,
-        model: provider.model,
-      };
-
-      const response = await fetch(metadata.endpoint, {
+      const response = await fetch('https://compute.0g.ai/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
         body: JSON.stringify({
-          model: metadata.model,
+          model: 'llama-3-70b',
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: JSON.stringify(action) },

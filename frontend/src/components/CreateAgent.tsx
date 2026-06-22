@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { VeriddChain } from '../lib/chain';
 import { VeriddStorage } from '../lib/storage';
+import { generateAgentAvatar } from '../lib/avatar';
 
 interface Props {
   chain: VeriddChain;
@@ -25,6 +26,10 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const submitting = useRef(false);
+  const avatarPreview = useMemo(
+    () => name.trim() ? generateAgentAvatar(Date.now() % 10000, name.trim(), 48) : null,
+    [name]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,9 +72,18 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-md animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-lg font-bold text-white">Register Agent</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Mint an Agentic ID on 0G Chain</p>
+          <div className="flex items-center gap-3">
+            {avatarPreview && (
+              <img
+                src={avatarPreview}
+                alt="preview"
+                className="w-10 h-10 rounded-lg bg-gray-800/50 ring-1 ring-violet-500/20"
+              />
+            )}
+            <div>
+              <h2 className="text-lg font-bold text-white">Register Agent</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Mint an Agentic ID on 0G Chain</p>
+            </div>
           </div>
           <button
             onClick={onCancel}

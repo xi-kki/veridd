@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AgentCard } from './components/AgentCard';
 import { CreateAgent } from './components/CreateAgent';
 import { ReviewPanel } from './components/ReviewPanel';
+import { FloatingIdCard } from './components/FloatingIdCard';
 import { VeriddChain } from './lib/chain';
 
 const CONTRACT_ADDRESS = '0xFAc1CE1b75A0C46C07EE6672DA97152E8e468521';
@@ -69,15 +70,37 @@ function App() {
     <div className="min-h-screen bg-gray-950">
       {/* ═══ NAV ═══ */}
       <nav className="border-b border-gray-800 bg-gray-950/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        {/* Animated gradient underline */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] overflow-hidden">
+          <div
+            className="w-full h-full animate-gradient-slide"
+            style={{
+              background: 'linear-gradient(90deg, transparent, #a855f7, #7c3aed, #22d3ee, transparent)',
+              backgroundSize: '200% 100%',
+            }}
+          />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between relative">
           <div className="flex items-center gap-3">
-            <span className="font-black text-white text-xl tracking-tight hover:text-violet-400 transition-colors cursor-default">
-              Veridd
-            </span>
-            <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 
-              rounded-full border border-violet-500/20 font-medium">
-              on 0G
-            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-5 h-5 flex-shrink-0">
+              <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-black text-white text-xl tracking-tight hover:text-violet-400 transition-colors cursor-default">
+                  Veridd
+                </span>
+                <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 
+                  rounded-full border border-violet-500/20 font-medium">
+                  on 0G
+                </span>
+              </div>
+              <span className="text-[10px] text-gray-500 tracking-wide -mt-0.5">
+                True Identity for AI Agents
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -86,6 +109,14 @@ function App() {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-slow" />
               0G Galileo
             </div>
+
+            {/* Score ticker (before connect) */}
+            {!address && (
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-gray-600">
+                <span className="text-violet-400 font-mono tabular-nums">12,847</span>
+                <span>agents</span>
+              </div>
+            )}
 
             {/* Wallet */}
             {!address ? (
@@ -118,49 +149,10 @@ function App() {
           </div>
         )}
 
-        {/* ═══ HERO ═══ */}
+        {/* ═══ HERO — Floating ID Card ═══ */}
         {!address && (
-          <div className="text-center py-16 sm:py-24">
-            <div className="text-6xl mb-5">🤖</div>
-            <h1 className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight">
-              Veridd
-            </h1>
-            <p className="text-lg text-gray-500 font-medium mb-1">True Identity for AI Agents</p>
-            <p className="text-sm text-gray-600 max-w-lg mx-auto mb-8 leading-relaxed">
-              A credit score for AI agents, built on{' '}
-              <span className="text-violet-400 font-medium">0G Chain</span>
-              {' + '}
-              <span className="text-emerald-400 font-medium">0G Storage</span>
-              {' + '}
-              <span className="text-cyan-400 font-medium">0G Compute</span>
-              {' + '}
-              <span className="text-violet-300 font-medium">Agentic ID</span>.
-              Every action reviewed. Every reputation verifiable.
-            </p>
-            <button
-              onClick={handleConnect}
-              className="px-8 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl 
-                transition-all font-medium text-sm cursor-pointer shadow-lg shadow-violet-500/20
-                hover:shadow-violet-500/30"
-            >
-              Connect Wallet to Start
-            </button>
-
-            {/* 0G Stack */}
-            <div className="mt-10 flex items-center justify-center gap-4 sm:gap-6 text-[11px] text-gray-700">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-400" /> 0G Chain
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> 0G Storage
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> 0G Compute
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-300" /> Agentic ID
-              </span>
-            </div>
+          <div className="pt-8 sm:pt-12 pb-4">
+            <FloatingIdCard onConnect={handleConnect} />
           </div>
         )}
 
@@ -226,7 +218,12 @@ function App() {
             ) : (
               /* Empty State */
               <div className="text-center py-16 bg-gray-900/40 rounded-2xl border border-gray-800">
-                <div className="text-4xl mb-3">🤖</div>
+                <div className="mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" className="w-14 h-14 mx-auto">
+                    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </div>
                 <h3 className="text-white font-semibold mb-1">No Agents Yet</h3>
                 <p className="text-xs text-gray-500 mb-4">Register your first AI agent to start building reputation.</p>
                 <button
