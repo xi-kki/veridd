@@ -9,3 +9,4 @@ coverage/
 *.log
 frontend/nul
 frontend/test.html
+frontend/dev/

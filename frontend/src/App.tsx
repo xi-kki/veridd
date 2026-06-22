@@ -18,40 +18,15 @@ interface Agent {
 function App() {
   const [chain, setChain] = useState<VeriddChain | null>(null);
   const [address, setAddress] = useState('');
+  const [error, setError] = useState('');
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<number | null>(null);
-  const [error, setError] = useState('');
 
-  const loadAgents = useCallback(async (c: VeriddChain) => {
-    setLoading(true);
+  const handleConnect = useCallback(async () => {
     try {
-      const ids = await c.getMyAgents();
-      const data: Agent[] = [];
-      for (const id of ids) {
-        const a = await c.getAgent(Number(id));
-        const rep = await c.getReputation(Number(id));
-        if (a) {
-          data.push({
-            agentId: Number(id),
-            name: a.name,
-            description: a.description,
-            veriddScore: rep,
-            isOwner: true
-          });
-        }
-      }
-      setAgents(data);
-    } catch (err) {
-      console.error('Failed to load agents:', err);
-    }
-    setLoading(false);
-  }, []);
-
-  const handleConnect = async () => {
-    setError('');
-    try {
+      setError('');
       const c = new VeriddChain(CONTRACT_ADDRESS);
       const addr = await c.connect();
       setChain(c);
@@ -60,11 +35,28 @@ function App() {
     } catch (err: any) {
       setError(err.message);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if ((window as any).ethereum?.selectedAddress) handleConnect();
   }, []);
+
+  const loadAgents = useCallback(async (c?: VeriddChain) => {
+    const ch = c || chain;
+    if (!ch || !address) return;
+    setLoading(true);
+    try {
+      const a = await ch.getAgentsByOwner(address);
+      setAgents(a);
+    } catch (err) {
+      console.error('load agents error:', err);
+    }
+    setLoading(false);
+  }, [chain, address]);
+
+  useEffect(() => {
+    if (address && chain) loadAgents();
+  }, [address]);
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -82,23 +74,18 @@ function App() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between relative">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-5 h-5 flex-shrink-0">
               <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
               <path d="m9 12 2 2 4-4"/>
             </svg>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-black text-white text-xl tracking-tight hover:text-violet-400 transition-colors cursor-default">
-                  Veridd
-                </span>
-                <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 
-                  rounded-full border border-violet-500/20 font-medium">
-                  on 0G
-                </span>
-              </div>
-              <span className="text-[10px] text-gray-500 tracking-wide -mt-0.5">
-                True Identity for AI Agents
+            <div className="flex items-center gap-2">
+              <span className="font-black text-white text-xl tracking-tight hover:text-violet-400 transition-colors cursor-default">
+                Veridd
+              </span>
+              <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 
+                rounded-full border border-violet-500/20 font-medium">
+                on 0G
               </span>
             </div>
           </div>
@@ -139,26 +126,27 @@ function App() {
       </nav>
 
       {/* ═══ MAIN ═══ */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main>
         {/* Error banner */}
         {error && (
-          <div className="mb-5 bg-red-900/15 border border-red-700/25 rounded-lg p-3.5 flex items-center gap-2">
-            <span className="text-red-400 text-sm">⚠️</span>
-            <p className="text-xs text-red-400">{error}</p>
-            <button onClick={() => setError('')} className="ml-auto text-red-400/60 hover:text-red-400 text-sm cursor-pointer">&times;</button>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+            <div className="bg-red-900/15 border border-red-700/25 rounded-lg p-3.5 flex items-center gap-2">
+              <span className="text-red-400 text-sm">⚠️</span>
+              <p className="text-xs text-red-400">{error}</p>
+              <button onClick={() => setError('')} className="ml-auto text-red-400/60 hover:text-red-400 text-sm cursor-pointer">&times;</button>
+            </div>
           </div>
         )}
 
-        {/* ═══ HERO — Floating ID Card ═══ */}
+        {/* ═══ HERO — Floating ID Card (full viewport) ═══ */}
         {!address && (
-          <div className="pt-8 sm:pt-12 pb-4">
-            <FloatingIdCard onConnect={handleConnect} />
-          </div>
+          <FloatingIdCard onConnect={handleConnect} />
         )}
 
-        {/* ═══ REGISTERED VIEW ═══ */}
+        {/* ═══ REGISTERED VIEW (with footer) ═══ */}
         {address && (
           <>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
             {/* Actions Bar */}
             <div className="flex items-center justify-between mb-6">
               <button
@@ -234,12 +222,10 @@ function App() {
                 </button>
               </div>
             )}
-          </>
-        )}
+          </div>
 
-        {/* ═══ FOOTER ═══ */}
-        {address && (
-          <footer className="mt-12 pt-6 border-t border-gray-800 text-center">
+          {/* ═══ FOOTER ═══ */}
+          <footer className="max-w-6xl mx-auto px-4 sm:px-6 mt-12 pb-8 pt-6 border-t border-gray-800 text-center">
             <div className="flex items-center justify-center gap-3 sm:gap-4 text-[11px] text-gray-600">
               <span>Powered by</span>
               {[
@@ -258,6 +244,7 @@ function App() {
               Every action verified · Every review immutable · Decentralized credit for AI agents
             </p>
           </footer>
+          </>
         )}
       </main>
     </div>
