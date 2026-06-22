@@ -5,20 +5,23 @@ interface Props {
 }
 
 /**
- * Floating VERIDD Identity Card — suspended like a prized medal in space.
+ * Floating VERIDD Identity Card — a prized medal suspended in deep space/water.
  *
- * The card hangs from a glowing ribbon that moves like a superhero's cloak.
- * Reach for it 3 times — it dodges at first, then surrenders on the third.
- * Click "Connect Wallet" and the catch celebrates before prompting MetaMask.
+ * The card hangs from a single ribbon that threads through a medal loop at the top,
+ * then cascades down like a cape. The ribbon moves with fluid physics — momentum,
+ * inertia, drift. The card itself floats with weight: reaching for it gently pushes
+ * it away, like trying to grab something valuable floating in water.
+ *
+ * Reach for it 3 times. On the third, it surrenders. Click Connect Wallet for a celebration.
  */
 export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // ───── Position & animation state ──────────────────────────────────────
-  const [cardPos, setCardPos] = useState({ x: 50, y: 50 });
-  const [targetPos, setTargetPos] = useState({ x: 50, y: 42 });
-  const [rotation, setRotation] = useState(0);
+  // ───── Card physics (inertia-based) ────────────────────────────────────
+  const [cardX, setCardX] = useState(50);     // percentage position
+  const [cardY, setCardY] = useState(44);
+  const velRef = useRef({ x: 0, y: 0 });      // velocity (inertia)
 
   // ───── Mouse tracking ──────────────────────────────────────────────────
   const mouseRef = useRef({ x: -9999, y: -9999 });
@@ -29,64 +32,70 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const [hoverCount, setHoverCount] = useState(0);
   const [caught, setCaught] = useState(false);
   const [buttonGlow, setButtonGlow] = useState(false);
-  const hoverStreakRef = useRef(0);    // tracks consecutive "reaches"
+  const hoverStreakRef = useRef(0);
   const lastHoverTime = useRef(0);
-  const isRepelling = useRef(true);
 
   // ───── Celebration & connection ────────────────────────────────────────
   const [celebrating, setCelebrating] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [particles, setParticles] = useState<Array<{
+    id: number; x: number; y: number;
+    vx: number; vy: number;
+    color: string; size: number; life: number;
+  }>>([]);
 
-  // ───── Cloak rope physics (spring-based lag) ───────────────────────────
-  const ropeMid = useRef({ x: 50, y: 15 });
-  const ropeVel = useRef({ x: 0, y: 0 });
-  const ropeTarget = useRef({ x: 50, y: 15 });
-
-  // ───── Ticker number ───────────────────────────────────────────────────
+  // ───── Ticker ──────────────────────────────────────────────────────────
   const [tickerValue, setTickerValue] = useState(0);
   const tickerTarget = 12847;
 
-  // ───── Particles for celebration ───────────────────────────────────────
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; color: string; size: number; life: number }>>([]);
+  // ───── Ribbon physics (cape control points) ────────────────────────────
+  // The ribbon has 2 physics-driven control points:
+  //   c1 — between anchor and medal loop (upper drape)
+  //   c2 — below the loop (cascading cape tail)
+  const c1Ref = useRef({ x: 42, y: 10 });
+  const c1Vel = useRef({ x: 0, y: 0 });
+  const c2Ref = useRef({ x: 50, y: 70 });
+  const c2Vel = useRef({ x: 0, y: 0 });
 
-  // ───── Track "hover proximity" — did the cursor get close? ────────────
-  const checkHoverProximity = useCallback((mx: number, my: number, cx: number, cy: number) => {
-    const dx = mx - cx;
-    const dy = my - cy;
-    return Math.sqrt(dx * dx + dy * dy) < 28;
+  // ───── Track "reach" attempts ─────────────────────────────────────────
+  const checkProximity = useCallback((mx: number, my: number, cx: number, cy: number) => {
+    return Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2) < 26;
   }, []);
 
   // ───── Spawn celebration particles ────────────────────────────────────
   const spawnCelebration = useCallback(() => {
     const colors = ['#a855f7', '#7c3aed', '#c084fc', '#22d3ee', '#34d399', '#fbbf24'];
-    const newParticles: Array<{ id: number; x: number; y: number; color: string; size: number; life: number }> = [];
+    const newP: typeof particles = [];
     for (let i = 0; i < 60; i++) {
       const angle = (Math.PI * 2 * i) / 60 + (Math.random() - 0.5) * 0.5;
-      const dist = 30 + Math.random() * 60;
-      newParticles.push({
+      const speed = 1.5 + Math.random() * 3;
+      newP.push({
         id: i,
-        x: Math.cos(angle) * dist,
-        y: Math.sin(angle) * dist,
+        x: 0, y: 0,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: 3 + Math.random() * 5,
+        size: 2 + Math.random() * 4,
         life: 1,
       });
     }
-    setParticles(newParticles);
-    // Fade particles out
+    setParticles(newP);
     const interval = setInterval(() => {
       setParticles(prev => {
-        const next = prev.map(p => ({ ...p, life: p.life - 0.04 }));
-        if (next.every(p => p.life <= 0)) {
-          clearInterval(interval);
-          return [];
-        }
+        const next = prev.map(p => ({
+          ...p,
+          x: p.x + p.vx,
+          y: p.y + p.vy,
+          vy: p.vy + 0.02,  // gravity
+          life: p.life - 0.025,
+        })).filter(p => p.life > 0);
+        if (next.length === 0) clearInterval(interval);
         return next;
       });
-    }, 40);
+    }, 30);
   }, []);
 
-  // ───── Handle mouse move ──────────────────────────────────────────────
+  // ───── Mouse handlers ─────────────────────────────────────────────────
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!containerRef.current || caught || connecting) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -94,130 +103,115 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     const my = ((e.clientY - rect.top) / rect.height) * 100;
     mouseRef.current = { x: mx, y: my };
 
-    // Check if cursor is trying to "reach" the card
     const now = Date.now();
-    if (checkHoverProximity(mx, my, cardPos.x, cardPos.y)) {
+    if (checkProximity(mx, my, cardX, cardY)) {
       if (now - lastHoverTime.current > 800) {
-        // Count this as a new "reach" attempt
         const newCount = Math.min(hoverStreakRef.current + 1, 3);
         hoverStreakRef.current = newCount;
         setHoverCount(newCount);
         lastHoverTime.current = now;
 
         if (newCount >= 3 && !caught) {
-          // 3rd hover — card surrenders!
           setCaught(true);
           setButtonGlow(true);
-          isRepelling.current = false;
         }
       }
     }
-  }, [cardPos.x, cardPos.y, caught, connecting, checkHoverProximity]);
+  }, [cardX, cardY, caught, connecting, checkProximity]);
 
-  // ───── Handle mouse leave ─────────────────────────────────────────────
   const handleMouseLeave = useCallback(() => {
-    if (caught) return; // don't reset if caught
+    if (caught) return;
     mouseRef.current = { x: -9999, y: -9999 };
   }, [caught]);
 
-  // ───── Main animation loop ────────────────────────────────────────────
+  // ───── Physics-based animation loop ───────────────────────────────────
   useEffect(() => {
     let running = true;
 
     const animate = () => {
       if (!running) return;
-      floatTime.current += 0.015;
+      floatTime.current += 0.016; // ~60fps
 
-      // ── Card movement ──────────────────────────────────────────────
-      // Gentle floating motion (figure-8-ish)
-      const floatX = Math.sin(floatTime.current * 0.6) * 2;
-      const floatY = Math.sin(floatTime.current * 0.8) * 2.5;
+      // ── CARD PHYSICS (inertia + spring) ──────────────────────────────
+      // Target position: center + repel + gentle float oscillation
+      const floatX = Math.sin(floatTime.current * 0.5) * 1.5;
+      const floatY = Math.sin(floatTime.current * 0.7) * 2;
 
-      // Calculate repel from mouse
-      const dx = mouseRef.current.x - targetPos.x;
-      const dy = mouseRef.current.y - targetPos.y;
+      const dx = mouseRef.current.x - cardX;
+      const dy = mouseRef.current.y - cardY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       let repelX = 0;
       let repelY = 0;
 
       if (caught) {
-        // Once caught, card gently drifts to center and stays
-        const toCenterX = 50 - targetPos.x;
-        const toCenterY = 42 - targetPos.y;
-        setTargetPos(prev => ({
-          x: prev.x + toCenterX * 0.03,
-          y: prev.y + toCenterY * 0.03,
-        }));
-      } else if (isRepelling.current && dist < 28 && dist > 0) {
-        // Repel: stronger the closer you get
-        const strength = ((28 - dist) / 28) * 22;
+        // Caught: gently return to center with slight overshoot
+        const toCX = 50 - cardX;
+        const toCY = 44 - cardY;
+        velRef.current.x += toCX * 0.002;
+        velRef.current.y += toCY * 0.002;
+      } else if (dist < 28 && dist > 0.5) {
+        // Repel force: gentle push, stronger when closer, like water displacement
+        const strength = ((28 - dist) / 28) * 0.15;
         repelX = -(dx / dist) * strength;
         repelY = -(dy / dist) * strength * 0.6;
 
-        const baseX = 50 + repelX;
-        const baseY = 42 + repelY;
-        setTargetPos(prev => ({
-          x: prev.x + (baseX - prev.x) * 0.06,
-          y: prev.y + (baseY - prev.y) * 0.06,
-        }));
+        velRef.current.x += repelX;
+        velRef.current.y += repelY;
       } else {
-        // Default: gently float near center
-        setTargetPos(prev => ({
-          x: prev.x + (50 - prev.x) * 0.008,
-          y: prev.y + (42 - prev.y) * 0.008,
-        }));
+        // No mouse nearby: gentle spring toward center
+        velRef.current.x += (50 - cardX) * 0.001;
+        velRef.current.y += (44 - cardY) * 0.001;
       }
 
-      setCardPos({
-        x: targetPos.x + floatX,
-        y: targetPos.y + floatY,
-      });
+      // Damping — the "water/space" feel: smooth deceleration
+      velRef.current.x *= 0.94;
+      velRef.current.y *= 0.94;
 
-      // ── Rotation (clamped) ────────────────────────────────────────
-      const mouseX = mouseRef.current.x;
-      if (mouseX > -100 && mouseX < 150 && !caught) {
-        const rawRot = (mouseX - 50) * 0.04;
-        setRotation(Math.max(-4, Math.min(4, rawRot)));
-      } else {
-        setRotation(prev => prev * 0.92);
-      }
+      // Update position
+      let newX = cardX + velRef.current.x + floatX * 0.008;
+      let newY = cardY + velRef.current.y + floatY * 0.008;
 
-      // ── Cloak rope physics ────────────────────────────────────────
-      // The rope midpoint is pulled toward its target (midpoint between
-      // anchor and card), with momentum that creates fabric-like lag.
-      const cardEndX = cardPos.x;
-      const cardEndY = cardPos.y - 20;
+      // Clamp to keep card fully visible (never off-screen)
+      newX = Math.max(20, Math.min(80, newX));
+      newY = Math.max(20, Math.min(75, newY));
 
-      // Target midpoint: somewhere between anchor and card, with some offset
-      ropeTarget.current = {
-        x: (42 + cardEndX) / 2 + Math.sin(floatTime.current * 0.3) * 2,
-        y: (0 + cardEndY) / 2 + 5,
-      };
+      setCardX(newX);
+      setCardY(newY);
 
-      // Spring physics: pull toward target, damp velocity
-      const pullX = (ropeTarget.current.x - ropeMid.current.x) * 0.015;
-      const pullY = (ropeTarget.current.y - ropeMid.current.y) * 0.015;
+      // ── RIBBON / CAPE PHYSICS ──────────────────────────────────────
+      const loopX = newX;       // medal loop follows card
+      const loopY = newY - 20;
 
-      // Add whip effect from card movement
-      const cardVelocity = { x: 0, y: 0 }; // simplified
+      // c1: upper drape — between anchor (42,-5) and loop
+      const c1TargetX = (42 + loopX) / 2 + Math.sin(floatTime.current * 0.4) * 2;
+      const c1TargetY = (-5 + loopY) / 2 + 3;
 
-      ropeVel.current.x = (ropeVel.current.x + pullX) * 0.92;
-      ropeVel.current.y = (ropeVel.current.y + pullY) * 0.92;
+      // c2: cape tail — below the loop, cascading down
+      const c2TargetX = loopX + Math.sin(floatTime.current * 0.3) * 5;
+      const c2TargetY = loopY + 35 + Math.cos(floatTime.current * 0.5) * 3;
 
-      ropeMid.current.x += ropeVel.current.x;
-      ropeMid.current.y += ropeVel.current.y;
+      // Spring forces on c1
+      c1Vel.current.x += (c1TargetX - c1Ref.current.x) * 0.004;
+      c1Vel.current.y += (c1TargetY - c1Ref.current.y) * 0.004;
+      c1Vel.current.x *= 0.93;
+      c1Vel.current.y *= 0.93;
+      c1Ref.current.x += c1Vel.current.x;
+      c1Ref.current.y += c1Vel.current.y;
 
-      // Clamp rope midpoint to reasonable bounds
-      ropeMid.current.x = Math.max(20, Math.min(80, ropeMid.current.x));
-      ropeMid.current.y = Math.max(3, Math.min(50, ropeMid.current.y));
+      // Spring forces on c2 (cascading tail — more dramatic)
+      c2Vel.current.x += (c2TargetX - c2Ref.current.x) * 0.003;
+      c2Vel.current.y += (c2TargetY - c2Ref.current.y) * 0.003 + 0.002; // slight gravity
+      c2Vel.current.x *= 0.94;
+      c2Vel.current.y *= 0.94;
+      c2Ref.current.x += c2Vel.current.x;
+      c2Ref.current.y += c2Vel.current.y;
 
-      // ── Ticker animation ──────────────────────────────────────────
+      // ── Ticker ─────────────────────────────────────────────────────
       if (connecting) {
         setTickerValue(prev => {
           if (prev < tickerTarget) {
-            const increment = Math.floor((tickerTarget - prev) / 40) + 1;
-            return Math.min(prev + increment, tickerTarget);
+            return Math.min(prev + Math.floor((tickerTarget - prev) / 40) + 1, tickerTarget);
           }
           return prev;
         });
@@ -228,20 +222,17 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
     animate();
     return () => { running = false; cancelAnimationFrame(rafRef.current); };
-  }, [targetPos.x, targetPos.y, cardPos.x, cardPos.y, caught, connecting]);
+  }, [cardX, cardY, caught, connecting]);
 
   // ───── Handle connect click ─────────────────────────────────────────
   const handleConnect = useCallback(() => {
-    // Celebration first!
     setCelebrating(true);
     spawnCelebration();
 
-    // After celebration, show ticker and then trigger connect
     setTimeout(() => {
       setCelebrating(false);
       setConnecting(true);
 
-      // Simulate the ticker for a bit, then call parent onConnect
       setTimeout(() => {
         setConnecting(false);
         setTickerValue(tickerTarget);
@@ -250,18 +241,28 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     }, 1200);
   }, [onConnect, spawnCelebration]);
 
-  // ───── Rope anchor ──────────────────────────────────────────────────
+  // ───── SVG paths ────────────────────────────────────────────────────
+  const loopX = cardX;
+  const loopY = cardY - 20;
+
+  // Ribbon path: anchor → c1 (upper drape) → medal loop → c2 (cape tail) → tail end
   const anchorX = 42;
   const anchorY = -5;
-  const ropeEndX = cardPos.x;
-  const ropeEndY = cardPos.y - 20;
-  const midX = ropeMid.current.x + Math.sin(floatTime.current * 0.5) * 1.5;
-  const midY = ropeMid.current.y + Math.cos(floatTime.current * 0.6) * 2;
-  const ropePath = `M ${anchorX} ${anchorY} Q ${midX} ${midY} ${ropeEndX} ${ropeEndY}`;
 
-  // ───── Button pulse animation class ─────────────────────────────────
+  // Upper ribbon: anchor through loop (medal ribbon style)
+  const upperPath = `M ${anchorX} ${anchorY} Q ${c1Ref.current.x} ${c1Ref.current.y} ${loopX} ${loopY}`;
+
+  // Lower cape: loop cascading down
+  const tailEndX = c2Ref.current.x + Math.sin(floatTime.current * 0.4) * 3;
+  const tailEndY = c2Ref.current.y + 15;
+  const lowerPath = `M ${loopX} ${loopY} Q ${c2Ref.current.x} ${c2Ref.current.y} ${tailEndX} ${tailEndY}`;
+
+  // Full ribbon (for glow overlay)
+  const fullRibbon = `${upperPath} ${lowerPath.slice(1)}`;
+
+  // ───── Button pulse ─────────────────────────────────────────────────
   const btnPulseClass = buttonGlow
-    ? 'shadow-[0_0_20px_#a855f7] animate-pulse'
+    ? 'shadow-[0_0_25px_#a855f7] animate-pulse'
     : '';
 
   return (
@@ -271,7 +272,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       onMouseLeave={handleMouseLeave}
       className="relative w-full h-[500px] sm:h-[580px] overflow-hidden select-none cursor-default"
     >
-      {/* ═══ Background star field ═══ */}
+      {/* ═══ Star field ═══ */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 40 }).map((_, i) => (
           <div
@@ -290,7 +291,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         ))}
       </div>
 
-      {/* ═══ CELEBRATION PARTICLES ═══ */}
+      {/* ═══ Celebration particles ═══ */}
       {celebrating && particles.map(p => (
         <div
           key={p.id}
@@ -302,71 +303,71 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
             height: p.size + 'px',
             backgroundColor: p.color,
             opacity: Math.max(0, p.life),
-            transform: `translate(-50%, -50%) scale(${1 - p.life * 0.3})`,
-            transition: 'all 0.04s linear',
-            boxShadow: `0 0 6px ${p.color}`,
+            boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+            transition: 'all 0.03s linear',
           }}
         />
       ))}
 
-      {/* ═══ ROPE / RIBBON SVG ═══ */}
+      {/* ═══ RIBBON / CAPE SVG ═══ */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-0"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
-        style={{ filter: 'drop-shadow(0 0 4px rgba(168, 85, 247, 0.3))' }}
+        style={{ filter: 'drop-shadow(0 0 6px rgba(168, 85, 247, 0.25))' }}
       >
-        {/* Main ribbon (cloak) — thicker, glowing */}
+        {/* Cape ribbon — main flowing tail */}
         <path
-          d={ropePath}
+          d={fullRibbon}
           fill="none"
-          stroke="url(#ribbonGrad)"
-          strokeWidth="0.5"
+          stroke="url(#capeGrad)"
+          strokeWidth="0.55"
           strokeLinecap="round"
-          opacity="0.7"
+          opacity="0.65"
         />
         {/* Core glow */}
         <path
-          d={ropePath}
+          d={fullRibbon}
           fill="none"
           stroke="#a855f7"
           strokeWidth="0.15"
           strokeLinecap="round"
-          opacity="0.5"
-          strokeDasharray="0.2 0.4"
+          opacity="0.45"
         />
-        {/* Subtle fabric texture */}
+        {/* Fabric texture overlay */}
         <path
-          d={ropePath}
+          d={fullRibbon}
           fill="none"
           stroke="#c084fc"
-          strokeWidth="0.08"
+          strokeWidth="0.06"
           strokeLinecap="round"
-          opacity="0.3"
-          strokeDasharray="0.1 0.6 0.3 0.4"
+          opacity="0.25"
+          strokeDasharray="0.15 0.5 0.3 0.4"
         />
-        {/* Gradient definition */}
+        {/* Anchor point glow */}
+        <circle cx={anchorX} cy={anchorY} r="1.8" fill="none" stroke="#7c3aed" strokeWidth="0.25" opacity="0.6" />
+        <circle cx={anchorX} cy={anchorY} r="0.8" fill="#a855f7" opacity="0.4" />
+
+        {/* Gradient definition — fades toward tail end */}
         <defs>
-          <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id="capeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#a855f7" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#c084fc" stopOpacity="0.3" />
+            <stop offset="35%" stopColor="#a855f7" stopOpacity="0.7" />
+            <stop offset="70%" stopColor="#c084fc" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#c084fc" stopOpacity="0.1" />
           </linearGradient>
         </defs>
-        {/* Anchor ring at top */}
-        <circle cx={anchorX} cy={anchorY} r="1.5" fill="none" stroke="#7c3aed" strokeWidth="0.3" opacity="0.8" />
-        <circle cx={anchorX} cy={anchorY} r="0.8" fill="#a855f7" opacity="0.4" />
       </svg>
 
-      {/* ═══ PROGRESS INDICATOR (hover count) ═══ */}
+      {/* ═══ Hover progress dots ═══ */}
       {!caught && hoverCount > 0 && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex gap-2 pointer-events-none">
           {[1, 2, 3].map(i => (
             <div
               key={i}
-              className={`w-2 h-2 rounded-full transition-all duration-500 ${
+              className={`w-2 h-2 rounded-full transition-all duration-700 ${
                 i <= hoverCount
-                  ? 'bg-violet-400 shadow-[0_0_6px_#a855f7] scale-110'
+                  ? 'bg-violet-400 shadow-[0_0_8px_#a855f7] scale-110'
                   : 'bg-gray-700'
               }`}
             />
@@ -374,33 +375,35 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         </div>
       )}
 
-      {/* ═══ THE ID CARD (medal) ═══ */}
+      {/* ═══ THE CARD (medal) ═══ */}
       <div
         ref={cardRef}
         className="absolute z-10"
         style={{
-          left: `calc(${cardPos.x}% - 140px)`,
-          top: `calc(${cardPos.y}% - 110px)`,
-          transform: `rotate(${rotation}deg)`,
-          transition: caught ? 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none',
+          left: `calc(${cardX}% - 150px)`,
+          top: `calc(${cardY}% - 110px)`,
+          transform: `rotate(${caught ? '0deg' : `${Math.max(-3, Math.min(3, (mouseRef.current.x - 50) * 0.025))}deg`})`,
+          transition: caught ? 'transform 0.6s ease-out' : undefined,
         }}
       >
-        {/* ═══ MEDAL LOOP (enlarged ring) ═══ */}
+        {/* ═══ MEDAL LOOP ═══ */}
         <div
           className="absolute left-1/2 -top-5 z-20 pointer-events-none flex flex-col items-center"
-          style={{ marginLeft: '-6px' }}
+          style={{ marginLeft: '-7px' }}
         >
           {/* Outer ring */}
           <div
-            className="w-3 h-3 rounded-full border-2"
+            className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center"
             style={{
               borderColor: '#a855f7',
-              boxShadow: '0 0 8px rgba(168, 85, 247, 0.5), inset 0 0 4px rgba(168, 85, 247, 0.3)',
+              boxShadow: '0 0 10px rgba(168, 85, 247, 0.5), inset 0 0 6px rgba(168, 85, 247, 0.3)',
               background: 'linear-gradient(135deg, rgba(168,85,247,0.3), rgba(124,58,237,0.1))',
             }}
-          />
-          {/* Small connector */}
-          <div className="w-0.5 h-2 bg-gradient-to-b from-violet-500/60 to-violet-400/30" />
+          >
+            <div className="w-1 h-1 rounded-full bg-violet-400/50" />
+          </div>
+          {/* Small connector stem */}
+          <div className="w-0.5 h-2 bg-gradient-to-b from-violet-500/60 to-violet-400/20" />
         </div>
 
         {/* ═══ CARD BODY ═══ */}
@@ -418,27 +421,23 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
               : undefined,
           }}
         >
-          {/* Holographic shimmer overlay */}
+          {/* Holographic shimmer */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-transparent via-violet-400/5 to-transparent
-                animate-shimmer"
-              style={{ transform: 'skewX(-20deg) translateX(-100%)' }}
-            />
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-violet-400/5 to-transparent animate-shimmer"
+              style={{ transform: 'skewX(-20deg) translateX(-100%)' }} />
           </div>
 
           {/* Card border glow */}
           <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-violet-500/20 pointer-events-none" />
           <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5 pointer-events-none" />
 
-          {/* Top section — Brand & Logo */}
+          {/* Top section */}
           <div className="relative px-5 pt-5 pb-3 border-b border-violet-500/15">
             <div className="flex items-center justify-between">
-              {/* Logo + Name */}
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800
                   flex items-center justify-center shadow-lg shadow-violet-500/20 ring-1 ring-violet-400/30">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
                     <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
                     <path d="m9 12 2 2 4-4"/>
                   </svg>
@@ -448,27 +447,20 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
                   <p className="text-[10px] text-violet-400/70 font-medium tracking-widest uppercase">True Identity for AI Agents</p>
                 </div>
               </div>
-
-              {/* 0G Badge */}
               <div className={`px-2 py-1 rounded-md border ${
-                caught
-                  ? 'bg-violet-500/20 border-violet-400/40'
-                  : 'bg-violet-500/10 border-violet-500/25'
+                caught ? 'bg-violet-500/20 border-violet-400/40' : 'bg-violet-500/10 border-violet-500/25'
               }`}>
                 <span className="text-[9px] font-bold text-violet-400 tracking-wider">0G</span>
               </div>
             </div>
           </div>
 
-          {/* Middle section — Agent Photo + Info */}
+          {/* Middle */}
           <div className="relative px-5 py-4">
             <div className="flex gap-4">
-              {/* Photo placeholder */}
               <div className="flex-shrink-0">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-violet-600/30 to-indigo-800/30
-                  border border-violet-400/25 flex items-center justify-center
-                  shadow-inner shadow-violet-900/30 overflow-hidden relative">
-                  {/* Circuit-like decorative lines */}
+                  border border-violet-400/25 flex items-center justify-center shadow-inner shadow-violet-900/30 overflow-hidden relative">
                   <svg viewBox="0 0 80 80" className="absolute inset-0 w-full h-full opacity-30">
                     <line x1="20" y1="10" x2="20" y2="40" stroke="#a855f7" strokeWidth="0.5" />
                     <line x1="10" y1="40" x2="40" y2="40" stroke="#a855f7" strokeWidth="0.5" />
@@ -478,15 +470,12 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
                     <circle cx="40" cy="40" r="3" fill="none" stroke="#c084fc" strokeWidth="0.5" />
                     <circle cx="60" cy="50" r="2" fill="none" stroke="#c084fc" strokeWidth="0.5" />
                   </svg>
-                  {/* Shield icon */}
                   <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="1.5" className="w-7 h-7 relative z-10">
                     <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
                     <path d="m9 12 2 2 4-4"/>
                   </svg>
                 </div>
               </div>
-
-              {/* Info fields */}
               <div className="flex-1 min-w-0 space-y-1.5">
                 <div>
                   <p className="text-[9px] text-gray-600 font-medium uppercase tracking-widest">Agent</p>
@@ -511,10 +500,9 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
             </div>
           </div>
 
-          {/* Bottom section — Score + Connect */}
+          {/* Bottom */}
           <div className="relative px-5 py-3 bg-black/30 border-t border-violet-500/15">
             <div className="flex items-center justify-between">
-              {/* Score / Ticker */}
               {connecting ? (
                 <div>
                   <p className="text-[9px] text-gray-600 font-medium uppercase tracking-widest mb-0.5">Trusted by</p>
@@ -537,7 +525,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
                 </div>
               )}
 
-              {/* Connect Wallet button */}
               {!connecting ? (
                 <button
                   onClick={handleConnect}
@@ -562,7 +549,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
               )}
             </div>
 
-            {/* Tech stack badges */}
             <div className="flex gap-1.5 mt-2.5 flex-wrap">
               {[
                 { label: '0G Chain', color: 'bg-violet-500/15 text-violet-400 border-violet-500/25' },
@@ -570,17 +556,13 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
                 { label: '0G Compute', color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/25' },
                 { label: 'Agentic ID', color: 'bg-violet-400/15 text-violet-300 border-violet-400/25' },
               ].map(badge => (
-                <span
-                  key={badge.label}
-                  className={`text-[8px] px-2 py-0.5 rounded-full border font-medium ${badge.color}`}
-                >
+                <span key={badge.label} className={`text-[8px] px-2 py-0.5 rounded-full border font-medium ${badge.color}`}>
                   {badge.label}
                 </span>
               ))}
             </div>
           </div>
 
-          {/* Bottom edge — holographic strip */}
           <div className={`h-1 bg-gradient-to-r ${
             caught
               ? 'from-violet-400 via-purple-400 to-violet-400'
@@ -589,7 +571,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         </div>
       </div>
 
-      {/* ═══ BOTTOM TAGLINE ═══ */}
+      {/* ═══ Tagline ═══ */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
         <p className="text-xs text-gray-500 animate-fade-in max-w-[260px]" style={{ animationDelay: '0.5s' }}>
           A <span className="text-violet-400 font-medium">credit score</span> for AI agents — verified on 0G
