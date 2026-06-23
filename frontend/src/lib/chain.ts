@@ -23,11 +23,15 @@ const CONTRACT_ABI = [
   'function getAgent(uint256 agentId) view returns (tuple(string name, string metadataURI, string description, uint256 totalReviews, uint256 totalScore, uint256 createdAt, bool exists))',
   'function getAgentsByOwner(address owner) view returns (uint256[])',
   'function submitReview(uint256 agentId, uint256 score, string actionStorageRoot, string reviewStorageRoot, string summary)',
+  'function submitAction(string actionType, string actionStorageRoot) returns (uint256)',
+  'function getActions(uint256 agentId) view returns (uint256[])',
+  'function getAction(uint256 actionId) view returns (tuple(address agent, string actionStorageRoot, string actionType, uint256 timestamp, bool reviewed))',
   'function getReputation(uint256 agentId) view returns (uint256 averageScore, uint256 totalReviews)',
   'function getReviews(uint256 agentId) view returns (tuple(address reviewer, uint256 score, string actionStorageRoot, string reviewStorageRoot, string summary, uint256 timestamp)[])',
   'function getReviewCount(uint256 agentId) view returns (uint256)',
   'function verifyActionProof(uint256 agentId, uint256 reviewIndex, string claimedStorageRoot) view returns (bool)',
   'event AgentCreated(uint256 indexed agentId, string name, address indexed owner, uint256 timestamp)',
+  'event ActionSubmitted(uint256 indexed agentId, uint256 indexed actionId, string actionType, string storageRoot, address indexed agent, uint256 timestamp)',
   'event ReviewSubmitted(uint256 indexed agentId, uint256 score, address indexed reviewer, string actionRoot, uint256 timestamp)',
 ];
 
@@ -182,6 +186,65 @@ export class VeriddChain {
     } catch {
       return { average: 0, total: 0 }; // Graceful fallback
     }
+  }
+
+  /** Agent autonomously submits an action (proof of work) */
+  async submitAction(actionType: string, actionStorageRoot: string): Promise<bigint> {
+    if (!this.contract) throw new Error('Not connected. Connect your wallet first.');
+    if (!actionType.trim()) throw new Error('Action type required');
+    if (!actionStorageRoot.trim()) throw new Error('Storage root required');
+
+    const tx = await this.contract.submitAction(actionType, actionStorageRoot);
+    const receipt = await Promise.race([
+      tx.wait(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Transaction timed out')), TX_TIMEOUT),
+      ),
+    ]);
+
+    // Parse the ActionSubmitted event
+    for (const log of receipt.logs) {
+      try {
+        const parsed = this.contract.interface.parseLog(log);
+        if (parsed?.name === 'ActionSubmitted') {
+          return parsed.args.actionId;
+        }
+      } catch { /* skip */ }
+    }
+    throw new Error('Action submitted but could not read the ID.');
+  }
+
+  /** Get all action IDs for an agent */
+  async getAgentActions(agentId: number | bigint): Promise<bigint[]> {
+    if (!this.contract) throw new Error('Not connected');
+    try {
+      return await this.contract.getActions(agentId);
+    } catch { return []; }
+  }
+
+  /** Get action details */
+  async getAction(actionId: number | bigint): Promise<{ agent: string; actionStorageRoot: string; actionType: string; timestamp: bigint; reviewed: boolean } | null> {
+    if (!this.contract) throw new Error('Not connected');
+    try {
+      return await this.contract.getAction(actionId);
+    } catch { return null; }
+  }
+
+  /** Query ActionSubmitted events (last N blocks) */
+  async queryRecentActions(fromBlock?: number): Promise<Array<{ agentId: bigint; actionId: bigint; actionType: string; storageRoot: string; agent: string; timestamp: bigint }>> {
+    if (!this.contract) return [];
+    try {
+      const filter = this.contract.filters.ActionSubmitted();
+      const events = await this.contract.queryFilter(filter, fromBlock || -5000, 'latest');
+      return events.map(e => ({
+        agentId: e.args.agentId,
+        actionId: e.args.actionId,
+        actionType: e.args.actionType,
+        storageRoot: e.args.storageRoot,
+        agent: e.args.agent,
+        timestamp: e.args.timestamp,
+      }));
+    } catch { return []; }
   }
 
   /** Submit a peer review onchain */

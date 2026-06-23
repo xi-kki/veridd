@@ -3,6 +3,7 @@ import { AgentCard } from './components/AgentCard';
 import { CreateAgent } from './components/CreateAgent';
 import { ReviewPanel } from './components/ReviewPanel';
 import { FloatingIdCard } from './components/FloatingIdCard';
+import { AutonomousDemo } from './components/AutonomousDemo';
 import { VeriddChain } from './lib/chain';
 
 // Default to testnet. Override with VITE_CONTRACT_ADDRESS in frontend/.env for local dev
@@ -312,6 +313,17 @@ function App() {
                   >
                     Register Your First Agent →
                   </button>
+                </div>
+              )}
+
+              {/* Autonomous Agent Network — auto-starts when 2+ agents exist */}
+              {chain && agents.length >= 2 && (
+                <div className="mt-8">
+                  <AutonomousDemo
+                    chain={chain}
+                    agents={agents}
+                    onScoreUpdate={() => loadAgents(chain)}
+                  />
                 </div>
               )}
             </div>

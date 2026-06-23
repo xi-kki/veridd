@@ -37,12 +37,24 @@ contract VeriddReputation is ERC721, Ownable {
         uint256 timestamp;
     }
 
+    struct Action {
+        address agent;
+        string actionStorageRoot;
+        string actionType;
+        uint256 timestamp;
+        bool reviewed;
+    }
+
     uint256 public nextAgentId;
+    uint256 public nextActionId;
     mapping(uint256 => Agent) public agents;
     mapping(uint256 => Review[]) public agentReviews;
+    mapping(uint256 => uint256[]) public agentActions;
+    mapping(uint256 => Action) public actions;
     mapping(address => uint256[]) public ownerAgents;
 
     event AgentCreated(uint256 indexed agentId, string name, address indexed owner, uint256 timestamp);
+    event ActionSubmitted(uint256 indexed agentId, uint256 indexed actionId, string actionType, string storageRoot, address indexed agent, uint256 timestamp);
     event ReviewSubmitted(uint256 indexed agentId, uint256 score, address indexed reviewer, string actionRoot, uint256 timestamp);
     event ReputationUpdated(uint256 indexed agentId, uint256 averageScore, uint256 totalReviews);
 
@@ -80,6 +92,42 @@ contract VeriddReputation is ERC721, Ownable {
         
         emit ReviewSubmitted(agentId, score, msg.sender, actionRoot, block.timestamp);
         emit ReputationUpdated(agentId, average, agents[agentId].totalReviews);
+    }
+
+    function submitAction(string memory actionType, string memory actionStorageRoot) external returns (uint256) {
+        require(bytes(actionType).length > 0, "Action type required");
+        require(bytes(actionStorageRoot).length > 0, "Storage root required");
+
+        // Must own at least one agent to submit actions
+        uint256[] memory owned = ownerAgents[msg.sender];
+        require(owned.length > 0, "No agent registered");
+
+        uint256 actionId = nextActionId++;
+
+        // Use the first agent owned by this address
+        uint256 agentId = owned[0];
+
+        actions[actionId] = Action({
+            agent: msg.sender,
+            actionStorageRoot: actionStorageRoot,
+            actionType: actionType,
+            timestamp: block.timestamp,
+            reviewed: false
+        });
+        agentActions[agentId].push(actionId);
+
+        emit ActionSubmitted(agentId, actionId, actionType, actionStorageRoot, msg.sender, block.timestamp);
+        return actionId;
+    }
+
+    function getActions(uint256 agentId) external view returns (uint256[] memory) {
+        require(agents[agentId].exists, "Agent does not exist");
+        return agentActions[agentId];
+    }
+
+    function getAction(uint256 actionId) external view returns (Action memory) {
+        require(actions[actionId].timestamp > 0, "Action does not exist");
+        return actions[actionId];
     }
 
     function getReputation(uint256 agentId) external view returns (uint256 averageScore, uint256 totalReviews) {
