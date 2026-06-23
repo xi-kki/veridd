@@ -61,18 +61,13 @@ const MESSAGES = [
   '> STANDING BY // AWAITING AGENT ACTIVITY...',
 ];
 
-const TYPING_SPEED = 28; // ms per character
-const HOLD_DURATION = 2500; // ms to hold after message finishes
-const FADE_DURATION = 400; // ms for crossfade
+const TYPING_SPEED = 24; // ms per character — continuous typing, no pauses
 
 export const MissionTerminal: React.FC = () => {
   const [displayText, setDisplayText] = useState('');
-  const [visible, setVisible] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
   const msgIndexRef = useRef(0);
   const charIndexRef = useRef(0);
-  const phaseRef = useRef<'typing' | 'hold' | 'fade'>('typing');
-  const timerRef = useRef<number>(0);
   const lastCharTimeRef = useRef(0);
 
   // Blinking cursor
@@ -83,38 +78,24 @@ export const MissionTerminal: React.FC = () => {
     return () => clearInterval(iv);
   }, []);
 
-  // Main typing loop
+  // Main typing loop — continuous, no pauses
   useEffect(() => {
     let running = true;
 
     const tick = (now: number) => {
       if (!running) return;
 
-      if (phaseRef.current === 'typing') {
-        if (now - lastCharTimeRef.current >= TYPING_SPEED) {
-          lastCharTimeRef.current = now;
-          const msg = MESSAGES[msgIndexRef.current];
-          if (charIndexRef.current < msg.length) {
-            charIndexRef.current++;
-            setDisplayText(msg.slice(0, charIndexRef.current));
-          } else {
-            // Finished typing → hold
-            phaseRef.current = 'hold';
-            timerRef.current = now;
-          }
-        }
-      } else if (phaseRef.current === 'hold') {
-        if (now - timerRef.current >= HOLD_DURATION) {
-          phaseRef.current = 'fade';
-          setVisible(true);
-          // Briefly flash then advance
-          setTimeout(() => {
-            if (!running) return;
-            msgIndexRef.current = (msgIndexRef.current + 1) % MESSAGES.length;
-            charIndexRef.current = 0;
-            setDisplayText('');
-            phaseRef.current = 'typing';
-          }, FADE_DURATION);
+      if (now - lastCharTimeRef.current >= TYPING_SPEED) {
+        lastCharTimeRef.current = now;
+        const msg = MESSAGES[msgIndexRef.current];
+        if (charIndexRef.current < msg.length) {
+          charIndexRef.current++;
+          setDisplayText(msg.slice(0, charIndexRef.current));
+        } else {
+          // Finished → immediately next message
+          msgIndexRef.current = (msgIndexRef.current + 1) % MESSAGES.length;
+          charIndexRef.current = 0;
+          setDisplayText('');
         }
       }
 
@@ -158,11 +139,10 @@ export const MissionTerminal: React.FC = () => {
         {/* Terminal content */}
         <div className="px-3 py-2.5 font-mono" style={{ minHeight: '3.6em' }}>
           <span
-            className="text-xs leading-relaxed transition-opacity duration-300"
+            className="text-xs leading-relaxed"
             style={{
               color: '#34d399',
               textShadow: '0 0 6px rgba(52, 211, 153, 0.3)',
-              opacity: visible ? 1 : 0,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
             }}

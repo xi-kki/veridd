@@ -47,8 +47,8 @@ const createWarpDots = (count: number) => {
       id: i,
       angle: Math.random() * Math.PI * 2,
       dist: Math.random() * 100,
-      speed: 0.6 + Math.random() * 1.8,
-      size: 0.8 + Math.random() * 1.8,
+      speed: 2.0 + Math.random() * 4.0,
+      size: 0.6 + Math.random() * 1.5,
       brightness: 0.3 + Math.random() * 0.7,
       hue: hues[Math.floor(Math.random() * 3)],
     });
@@ -70,21 +70,21 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
       {/* ═══ WARP SPEED DOTS ═══ */}
       {dots.map((d) => {
         // Distance grows outward — star flies past
-        let dist = (d.dist + time * d.speed) % 120;
+        let dist = (d.dist + time * d.speed * 20) % 100;
 
         // Polar → cartesian
         const x = CX + Math.cos(d.angle) * dist;
         const y = CY + Math.sin(d.angle) * dist;
 
-        // Opacity: brightest at mid-distance, fades at edges
-        const distNorm = dist / 120;
+        // Opacity: bright across most of the path, soft fade at edges only
+        const distNorm = dist / 100;
         const opacity =
-          distNorm < 0.05
-            ? distNorm / 0.05
-            : distNorm > 0.85
-            ? (1 - distNorm) / 0.15
+          distNorm < 0.02
+            ? distNorm / 0.02
+            : distNorm > 0.92
+            ? (1 - distNorm) / 0.08
             : 1;
-        const finalOpacity = d.brightness * 0.9 * opacity;
+        const finalOpacity = d.brightness * opacity;
 
         // Colors
         const bgColors: Record<string, string> = {
