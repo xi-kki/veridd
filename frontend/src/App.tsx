@@ -148,17 +148,35 @@ function App() {
           <>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
             {/* Actions Bar */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 gap-4">
               <button
                 onClick={() => setShowCreate(true)}
                 className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg 
-                  transition-all text-sm font-medium flex items-center gap-2 cursor-pointer"
+                  transition-all text-sm font-medium flex items-center gap-2 cursor-pointer flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Register Agent
               </button>
+
+              {/* Search bar with round logo SVG */}
+              <div className="relative flex-1 max-w-xs">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none">
+                  <svg viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-50">
+                    <circle cx="128" cy="128" r="120" fill="none" stroke="#a855f7" strokeWidth="8" opacity="0.3"/>
+                    <path d="M128 48 L172 72 L172 108 C172 156 152 190 128 204 C104 190 84 156 84 108 L84 72 Z" fill="#a855f7" opacity="0.2" stroke="#a855f7" strokeWidth="5"/>
+                    <path d="M104 128 L122 146 L152 110" stroke="#a855f7" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search agents by name or ID..."
+                  className="w-full bg-gray-900/60 border border-gray-700/50 rounded-lg pl-10 pr-4 py-2 
+                    text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-violet-500/50 
+                    focus:ring-1 focus:ring-violet-500/20 transition-all"
+                />
+              </div>
             </div>
 
             {/* Modals */}
