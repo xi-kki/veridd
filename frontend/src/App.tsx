@@ -46,7 +46,7 @@ function App() {
     if (!ch || !address) return;
     setLoading(true);
     try {
-      const a = await ch.getAgentsByOwner(address);
+      const a = await (ch as any).getAgentsByOwner(address);
       setAgents(a);
     } catch (err) {
       console.error('load agents error:', err);
