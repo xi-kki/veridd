@@ -1,8 +1,10 @@
 /**
- * SpaceObjects — TRUE WARP SPEED starfield.
- * Stars radiate OUTWARD from center in all directions.
- * Creates the "jumping to lightspeed" tunnel effect.
- * Plus planets, asteroids, moons, and comets drifting in the void.
+ * SpaceObjects — Cinematic warp-speed starfield.
+ * Pure black void. Long glowing streaks radiate from center.
+ * Violet/electric cyan accent colors. Radial motion blur.
+ * Ringed planets, comets, asteroids drifting in deep space.
+ *
+ * Inspired by: cyberpunk dark space, 60fps cinematic warp.
  */
 import React, { useMemo } from 'react';
 
@@ -24,33 +26,35 @@ interface Props {
   mouseY?: number;
 }
 
-// ── WARP STARFIELD ──
-// Stars radiate from center (50%, 42%) outward in all directions.
-// Near center = small dots. Near edges = long streaks.
-// This creates the illusion of FORWARD motion through space.
-const createWarpStars = (count: number) => {
-  const stars: Array<{
+// ── WARP STREAKS ──
+// Long glowing lines radiating from center, like hyperspace.
+const createWarpStreaks = (count: number) => {
+  const streaks: Array<{
     id: number;
-    angle: number;     // direction from center (radians)
-    dist: number;      // current distance from center (0-100)
-    speed: number;     // how fast it flies outward
-    size: number;      // base size
+    angle: number;
+    dist: number;
+    speed: number;
+    length: number;
+    width: number;
     brightness: number;
-    hue: number;       // 0=white, 1=slight purple
+    hue: 'white' | 'violet' | 'cyan';
   }> = [];
 
+  const hues: ('white' | 'violet' | 'cyan')[] = ['white', 'violet', 'cyan'];
+
   for (let i = 0; i < count; i++) {
-    stars.push({
+    streaks.push({
       id: i,
       angle: Math.random() * Math.PI * 2,
       dist: Math.random() * 100,
-      speed: 0.3 + Math.random() * 1.2,
-      size: 0.5 + Math.random() * 1.5,
-      brightness: 0.2 + Math.random() * 0.8,
-      hue: Math.random(),
+      speed: 0.4 + Math.random() * 1.6,
+      length: 4 + Math.random() * 12,
+      width: 0.5 + Math.random() * 1.2,
+      brightness: 0.3 + Math.random() * 0.7,
+      hue: hues[Math.floor(Math.random() * 3)],
     });
   }
-  return stars;
+  return streaks;
 };
 
 // Center of warp tunnel
@@ -58,103 +62,114 @@ const CX = 50;
 const CY = 42;
 
 export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
-  const stars = useMemo(() => createWarpStars(90), []);
+  const streaks = useMemo(() => createWarpStreaks(120), []);
 
   return (
     <>
-      {/* ═══ WARP SPEED STARFIELD ═══ */}
-      {stars.map((star) => {
-        // Distance grows outward from center over time
-        let dist = (star.dist + time * star.speed) % 110;
+      {/* ═══ PURE BLACK VOID — already done via bg color ═══ */}
 
-        // Convert polar → cartesian
-        const x = CX + Math.cos(star.angle) * dist;
-        const y = CY + Math.sin(star.angle) * dist;
+      {/* ═══ WARP SPEED STREAKS ═══ */}
+      {streaks.map((s) => {
+        // Distance grows outward — star flies past
+        let dist = (s.dist + time * s.speed) % 120;
 
-        // Streak effect: farther from center = longer streak
-        const streakFactor = Math.min(dist / 30, 1);
-        const streakLen = 1 + streakFactor * star.speed * 6;
-        const w = Math.max(star.size * 0.3, 0.5);
+        // Polar → cartesian
+        const x = CX + Math.cos(s.angle) * dist;
+        const y = CY + Math.sin(s.angle) * dist;
+
+        // Streak length: grows with distance (closer to edge = longer)
+        const stretch = Math.min(dist / 20, 1);
+        const streakLen = s.length * (0.5 + stretch * 2.5);
         const h = streakLen;
+        const w = s.width;
 
-        // Opacity: brightest at mid-distance, dim at center & far edges
-        const distNorm = dist / 110;
-        const opacityFactor =
-          distNorm < 0.1
-            ? distNorm / 0.1 // fade in from center
-            : distNorm > 0.8
-            ? (1 - distNorm) / 0.2 // fade out at edges
+        // Opacity: brightest at mid-distance, fades at edges
+        const distNorm = dist / 120;
+        const opacity =
+          distNorm < 0.05
+            ? distNorm / 0.05
+            : distNorm > 0.85
+            ? (1 - distNorm) / 0.15
             : 1;
-        const opacity = star.brightness * 0.7 * opacityFactor;
+        const finalOpacity = s.brightness * 0.85 * opacity;
 
-        // Rotation aligns with direction of travel
-        const rotation = (star.angle * 180) / Math.PI;
+        // Rotation = direction of travel
+        const rotation = (s.angle * 180) / Math.PI;
 
-        // Color: slight purple tint for some stars
-        const isPurple = star.hue > 0.7;
-        const bg = isPurple ? '#c4b5fd' : '#ffffff';
-        const glow = isPurple
-          ? `0 0 ${star.size}px rgba(168,85,247,${opacity * 0.3})`
-          : 'none';
+        // Color based on hue
+        const colors: Record<string, string> = {
+          white: 'rgba(255, 255, 255, ',
+          violet: 'rgba(196, 181, 253, ',
+          cyan: 'rgba(34, 211, 238, ',
+        };
+        const glowColors: Record<string, string> = {
+          white: `0 0 ${s.width * 2}px rgba(255,255,255,${finalOpacity * 0.15})`,
+          violet: `0 0 ${s.width * 4}px rgba(168,85,247,${finalOpacity * 0.25})`,
+          cyan: `0 0 ${s.width * 4}px rgba(34,211,238,${finalOpacity * 0.2})`,
+        };
+        const bgColors: Record<string, string> = {
+          white: '#ffffff',
+          violet: '#c4b5fd',
+          cyan: '#22d3ee',
+        };
 
         return (
           <div
-            key={star.id}
+            key={s.id}
             className="absolute pointer-events-none"
             style={{
               width: `${w}px`,
               height: `${h}px`,
               left: `${x}%`,
               top: `${y}%`,
-              opacity,
-              backgroundColor: bg,
-              borderRadius: '30%',
+              opacity: finalOpacity,
+              backgroundColor: bgColors[s.hue],
+              borderRadius: '20%',
               transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-              boxShadow: glow,
+              boxShadow: glowColors[s.hue],
               willChange: 'transform, opacity',
             }}
           />
         );
       })}
 
-      {/* ═══ PLANETS WITH RINGS + MOONS ═══ */}
+      {/* ═══ RINGED PLANETS ═══ */}
       {objects
         .filter((o) => o.type === 'planet')
         .map((obj, i) => {
-          const orbitT = time * 0.04 + i * 1.5;
-          const driftX = Math.sin(orbitT * 0.7) * 12;
-          const driftY = Math.cos(orbitT * 0.5) * 10;
-          const scrollWrap = (obj.y + driftY + time * obj.speed * 0.15) % 120 - 10;
-          const x = Math.max(-5, Math.min(105, obj.x + driftX + Math.sin(time * 0.02) * 3));
+          const ox = obj.x + Math.sin(time * 0.03 + i * 1.5) * 8;
+          const oy = (obj.y + Math.cos(time * 0.02 + i * 2) * 6 + time * obj.speed * 0.1) % 120 - 10;
 
           return (
             <div
               key={`p${i}`}
               className="absolute pointer-events-none"
               style={{
-                left: `${x}%`,
-                top: `${scrollWrap}%`,
-                opacity: 0.1,
+                left: `${ox}%`,
+                top: `${oy}%`,
+                opacity: 0.08,
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <svg width={obj.size * 6} height={obj.size * 6} viewBox="0 0 20 20">
-                <circle cx="10" cy="10" r={obj.size * 1.2} fill={obj.color} opacity="0.5" />
+              <svg width={obj.size * 7} height={obj.size * 7} viewBox="0 0 24 24">
+                {/* Planet */}
+                <circle cx="12" cy="12" r={obj.size * 1.2} fill={obj.color} opacity="0.5" />
+                {/* Ring */}
                 {obj.ringSize && (
                   <ellipse
-                    cx="10" cy="10"
-                    rx={obj.ringSize * 1.8} ry={obj.ringSize * 0.4}
-                    fill="none" stroke={obj.color} strokeWidth="0.4" opacity="0.35"
-                    transform={`rotate(${obj.angle + time * 1.5}, 10, 10)`}
+                    cx="12" cy="12"
+                    rx={obj.ringSize * 2} ry={obj.ringSize * 0.35}
+                    fill="none" stroke={obj.color} strokeWidth="0.4" opacity="0.3"
+                    transform={`rotate(${obj.angle + time * 1.2}, 12, 12)`}
                   />
                 )}
-                {/* Orbiting moon */}
+                {/* Moon */}
                 <circle
-                  cx={10 + Math.cos(time * 1.5 + i * 2.5) * 4.5}
-                  cy={10 + Math.sin(time * 1.5 + i * 2.5) * 4.5}
-                  r={1.2}
+                  cx={12 + Math.cos(time * 1.2 + i * 3) * 5}
+                  cy={12 + Math.sin(time * 1.2 + i * 3) * 5}
+                  r={1}
                   fill="white"
-                  opacity={0.25}
+                  opacity={0.2}
                 />
               </svg>
             </div>
@@ -165,19 +180,17 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
       {objects
         .filter((o) => o.type === 'asteroid')
         .map((obj, i) => {
-          const driftX = Math.sin(time * 0.05 + i * 2.3) * 15;
-          const driftY = Math.cos(time * 0.04 + i * 1.8) * 12;
-          const scrollWrap = (obj.y + driftY + time * obj.speed * 0.2) % 120 - 10;
-          const x = Math.max(-5, Math.min(105, obj.x + driftX));
+          const ax = obj.x + Math.sin(time * 0.04 + i * 2.3) * 14;
+          const ay = (obj.y + Math.cos(time * 0.03 + i * 1.8) * 10 + time * obj.speed * 0.15) % 120 - 10;
 
           return (
             <div
               key={`a${i}`}
               className="absolute pointer-events-none"
               style={{
-                left: `${x}%`,
-                top: `${scrollWrap}%`,
-                opacity: 0.12,
+                left: `${ax}%`,
+                top: `${ay}%`,
+                opacity: 0.1,
                 transform: 'translate(-50%, -50%)',
               }}
             >
@@ -187,7 +200,7 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
                   height: obj.size * 2.5,
                   backgroundColor: obj.color,
                   borderRadius: '40% 60% 55% 45% / 50% 45% 55% 50%',
-                  transform: `rotate(${obj.angle + time * 6}deg)`,
+                  transform: `rotate(${obj.angle + time * 5}deg)`,
                 }}
               />
             </div>
@@ -198,25 +211,25 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
       {objects
         .filter((o) => o.type === 'comet')
         .map((obj, i) => {
-          const scrollWrap = (obj.y + time * 0.3 + i * 20) % 120 - 10;
-          const x = Math.max(-5, Math.min(105, obj.x + Math.sin(time * 0.03 + i) * 8));
-          const pulse = 0.08 + Math.sin(time * 0.8 + i * 2) * 0.04 + 0.04;
+          const cx2 = obj.x + Math.sin(time * 0.02 + i * 2) * 10;
+          const cy2 = (obj.y + time * 0.2 + i * 15) % 120 - 10;
+          const pulse = 0.06 + Math.sin(time * 0.6 + i * 2) * 0.04 + 0.04;
 
           return (
             <div
               key={`c${i}`}
               className="absolute pointer-events-none"
               style={{
-                left: `${x}%`,
-                top: `${scrollWrap}%`,
+                left: `${cx2}%`,
+                top: `${cy2}%`,
                 opacity: pulse,
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <svg width="30" height="6" viewBox="0 0 30 6">
+              <svg width="32" height="6" viewBox="0 0 32 6">
                 <ellipse cx="2" cy="3" rx="2" ry="1.5" fill="white" opacity="0.5" />
-                <ellipse cx="8" cy="2.8" rx="4" ry="0.8" fill="white" opacity="0.2" />
-                <ellipse cx="16" cy="2.8" rx="7" ry="0.4" fill="white" opacity="0.08" />
+                <ellipse cx="9" cy="2.8" rx="5" ry="0.8" fill="white" opacity="0.2" />
+                <ellipse cx="18" cy="2.8" rx="8" ry="0.4" fill="white" opacity="0.08" />
               </svg>
             </div>
           );
