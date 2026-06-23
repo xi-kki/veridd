@@ -179,4 +179,11 @@ export class VeriddChain {
     try { return await this.contract.getAgentsByOwner(this._address); }
     catch { return []; }
   }
+
+  /** Get agent IDs by owner address (alias for the contract call) */
+  async getAgentsByOwner(owner: string): Promise<bigint[]> {
+    if (!this.contract) throw new Error('Not connected');
+    try { return await this.contract.getAgentsByOwner(owner); }
+    catch { return []; }
+  }
 }
