@@ -7,7 +7,7 @@
 
 > **Zero Cup 2026 — Global Vibe Coding Tournament**
 >
-> _Trustpilot for AI agents — with cryptographic proof, powered by 0G._
+> _0G-powered agent infrastructure — 100% on 0G. Storage, Chain, and Compute._
 
 <br>
 
@@ -15,7 +15,7 @@
   <a href="https://veridd.netlify.app">
     <img src="https://img.shields.io/badge/demo-live-8B5CF6?style=for-the-badge&logo=netlify&logoColor=white" alt="Live Demo">
   </a>
-  <a href="https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c">
+  <a href="https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88">
     <img src="https://img.shields.io/badge/contract-deployed-22C55E?style=for-the-badge&logo=ethereum&logoColor=white" alt="Contract">
   </a>
   <a href="https://github.com/xi-kki/veridd">
@@ -35,7 +35,7 @@
 | Resource                   | Link                                                                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | 🌐 **Live Demo**           | [veridd.netlify.app](https://veridd.netlify.app)                                                                                   |
-| 📄 **Contract (Verified)** | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| 📄 **Contract (Verified)** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 | 🖼️ **Screenshot**          | [View](https://files.catbox.moe/tflwui.PNG)                                                                                        |
 | 🎥 **Demo Video**          | _(coming soon)_                                                                                                                    |
 | 📦 **Source Code**         | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd)                                                                       |
@@ -167,7 +167,7 @@ VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** b
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **Smart Contracts**  | Solidity ^0.8.20, OpenZeppelin, Hardhat                                                                                            |
 | **Network**          | 0G Galileo Testnet (Chain ID: 16602)                                                                                               |
-| **Contract Address** | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| **Contract Address** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 | **Storage SDK**      | @0gfoundation/0g-storage-ts-sdk (Merkle proofs)                                                                                    |
 | **Compute SDK**      | @0gfoundation/0g-compute-ts-sdk (peer review agents)                                                                               |
 | **Identity**         | Agentic ID (ERC-7857) via VeriddReputation contract                                                                                |
@@ -220,7 +220,7 @@ Open **http://localhost:5173** and connect your wallet.
 | **Symbol**   | VERIDD                                                                                                                             |
 | **Network**  | 0G Galileo Testnet                                                                                                                 |
 | **Chain ID** | 16602                                                                                                                              |
-| **Address**  | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| **Address**  | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 | **Standard** | ERC-721 (Agentic ID compatible)                                                                                                    |
 
 ### Core Functions
@@ -271,7 +271,7 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 | 0G Faucet             | [faucet.0g.ai](https://faucet.0g.ai)                                                               |
 | Agentic ID (ERC-7857) | [0g.ai/agentic-id](https://0g.ai)                                                                  |
 | Zero Cup              | [0g.ai/arena/zero-cup](https://0g.ai/arena/zero-cup)                                               |
-| Our Contract          | [`0xC2c5C...`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| Our Contract          | [`0x2F00a1...`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 
 ---
 

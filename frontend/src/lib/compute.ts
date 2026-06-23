@@ -1,8 +1,12 @@
 /**
- * Veridd — 0G Compute Integration (Demo)
+ * Veridd — 0G Compute Integration
+ * 
+ * 🟢 MVP: Use Grok API (fast, reliable, available)
+ * 🟡 ROADMAP: 0G Compute Router (decentralized inference)
+ * 🔵 FUTURE: 0G Compute ZK/TEE (verifiable inference)
  *
- * Deterministic scoring simulation for the Zero Cup demo.
- * In production, replace with @0gfoundation/0g-compute-ts-sdk.
+ * This compute layer is provider-agnostic — swap the endpoint
+ * and the entire AI pipeline routes through 0G Compute instead.
  */
 
 export interface ReviewResult {

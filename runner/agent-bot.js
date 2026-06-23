@@ -25,7 +25,7 @@ const http = require('http');
 // ───── Config ───────────────────────────────────────────────────────
 
 const RPC = process.env.RPC_URL || 'https://evmrpc-testnet.0g.ai';
-const CONTRACT = process.env.CONTRACT || '0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c';
+const CONTRACT = process.env.CONTRACT || '0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88';
 const INTERVAL = parseInt(process.env.INTERVAL || '30000');
 const STORAGE_INDEXER = 'https://indexer-storage-testnet-turbo.0g.ai';
 

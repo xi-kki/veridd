@@ -188,7 +188,11 @@ export class VeriddChain {
     }
   }
 
-  /** Agent autonomously submits an action (proof of work) */
+  /** Agent autonomously submits an action (proof of work) 
+   * 1. Grok generates the action
+   * 2. Full data stored on 0G Storage → real Merkle root
+   * 3. Root hash submitted to 0G Chain for verification
+   */
   async submitAction(actionType: string, actionStorageRoot: string): Promise<bigint> {
     if (!this.contract) throw new Error('Not connected. Connect your wallet first.');
     if (!actionType.trim()) throw new Error('Action type required');

@@ -9,7 +9,7 @@ import { VeriddChain } from './lib/chain';
 // Default to testnet. Override with VITE_CONTRACT_ADDRESS in frontend/.env for local dev
 const CONTRACT_ADDRESS =
   import.meta.env.VITE_CONTRACT_ADDRESS ||
-  '0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c';
+  '0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88';
 
 interface Agent {
   agentId: number;
