@@ -1,101 +1,124 @@
 /**
- * MissionTerminal — Intergalactic scrolling command-line typing animation.
- * Types out VERIDD mission statements one character at a time,
- * cycles through a playlist of space-command messages.
- *
- * How it works:
- * - Messages are stored as an array of mission strings.
- * - A char index advances each frame, appending one character to the display.
- * - When a message is fully typed, it holds (cursor blinks), then fades and
- *   starts the next message — creating a continuous mission-briefing loop.
- * - Green/cyan terminal aesthetic with scanline overlay + blinking cursor.
- * - Uses requestAnimationFrame for smooth, controllable timing.
+ * MissionTerminal — Scrolling log with typing effect.
+ * Each message types out character by character on a new line.
+ * Pauses between messages. Text accumulates and fills the terminal.
+ * Green/cyan terminal aesthetic with blinking cursor.
  */
 import React, { useEffect, useRef, useState } from 'react';
 
 const MESSAGES = [
   '> VERIDD MISSION CONTROL v2.4.1 // BOOT SEQUENCE INITIALIZED...',
-  '> //                                                    ',
-  '> // Veridd leverages 0G\'s high-throughput storage and   ',
-  '> // decentralized compute to issue immutable, on-chain  ',
-  '> // reputations for autonomous AI agents.               ',
-  '> //                                                    ',
-  '> // Stop trusting black boxes.                          ',
-  '> // Start verifying agent actions on-chain.             ',
-  '> //                                                    ',
-  '> // → 100% ON 0G: STORAGE • CHAIN • COMPUTE ←          ',
-  '> //                                                    ',
-  '> // ═══════ STEP 1: AGENT REGISTRATION ═══════         ',
-  '> //                                                     ',
-  '> // Agent\'s core logic + identity hash is stored on     ',
-  '> // 0G Storage — immutable, verifiable, decentralized.  ',
-  '> //                                                     ',
-  '> // Each agent gets a unique on-chain ID linked to      ',
-  '> // their storage root. No central registry, no spoofing.',
-  '> //                                                     ',
-  '> // ═══════ STEP 2: ACTION VERIFICATION ═══════         ',
-  '> //                                                     ',
-  '> // Agent outputs are verified using 0G Compute —       ',
-  '> // decentralized verification that ensures every       ',
-  '> // action matches the registered logic.                ',
-  '> //                                                     ',
-  '> // No black box. Every decision is auditable on-chain. ',
-  '> //                                                     ',
-  '> // ═══════ STEP 3: REPUTATION SCORE ═══════            ',
-  '> //                                                     ',
-  '> // Immutable action history is anchored to the         ',
-  '> // 0G Chain — generating the Veridd Score.             ',
-  '> //                                                     ',
-  '> // Every review, every action, every reputation delta  ',
-  '> // is recorded on-chain. Transparent. Permanent.       ',
-  '> //                                                     ',
+  '> //',
+  '> // Veridd leverages 0G\'s high-throughput storage and',
+  '> // decentralized compute to issue immutable, on-chain',
+  '> // reputations for autonomous AI agents.',
+  '> //',
+  '> // Stop trusting black boxes.',
+  '> // Start verifying agent actions on-chain.',
+  '> //',
+  '> // → 100% ON 0G: STORAGE • CHAIN • COMPUTE ←',
+  '> //',
+  '> // ═══════ STEP 1: AGENT REGISTRATION ═══════',
+  '> //',
+  '> // Agent\'s core logic + identity hash stored on',
+  '> // 0G Storage — immutable, verifiable, decentralized.',
+  '> // Each agent gets a unique on-chain ID linked to',
+  '> // their storage root.',
+  '> //',
+  '> // ═══════ STEP 2: ACTION VERIFICATION ═══════',
+  '> //',
+  '> // Agent outputs verified using 0G Compute.',
+  '> // Every action checked against registered logic.',
+  '> // No black box. Fully auditable on-chain.',
+  '> //',
+  '> // ═══════ STEP 3: REPUTATION SCORE ═══════',
+  '> //',
+  '> // Immutable history anchored to 0G Chain →',
+  '> // Veridd Score. Every review, every action,',
+  '> // every reputation delta recorded permanently.',
+  '> //',
   '> SCANNING NETWORK // 12,847 REGISTERED AGENTS DETECTED',
   '> AUTONOMOUS AGENT LOOP // VERIFICATION CYCLE: RUNNING',
   '> REAL-TIME REPUTATION // IMMUTABLE • VERIFIABLE • ONCHAIN',
-  '> //                                                     ',
-  '> // ═══════ GET STARTED ═══════                         ',
-  '> //                                                     ',
-  '> // Connect your wallet to register your first AI       ',
-  '> // Agent on the 0G Galileo Testnet.                    ',
-  '> //                                                     ',
+  '> //',
+  '> // ═══════ GET STARTED ═══════',
+  '> //',
+  '> // Connect your wallet to register your first AI',
+  '> // Agent on the 0G Galileo Testnet.',
+  '> //',
   '> STANDING BY // AWAITING AGENT ACTIVITY...',
 ];
 
-const TYPING_SPEED = 24; // ms per character — continuous typing, no pauses
+const TYPING_SPEED = 18; // ms per character
+const PAUSE_BETWEEN = 600; // ms pause between messages
+const LINE_HEIGHT = 18; // approximate px per line
 
 export const MissionTerminal: React.FC = () => {
-  const [displayText, setDisplayText] = useState('');
+  const [typedText, setTypedText] = useState('');
+  const [currentLine, setCurrentLine] = useState('');
   const [showCursor, setShowCursor] = useState(true);
-  const msgIndexRef = useRef(0);
-  const charIndexRef = useRef(0);
-  const lastCharTimeRef = useRef(0);
+  const [maxLines, setMaxLines] = useState(8);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Blinking cursor
   useEffect(() => {
-    const iv = setInterval(() => {
-      setShowCursor((p) => !p);
-    }, 530);
+    const iv = setInterval(() => setShowCursor((p) => !p), 530);
     return () => clearInterval(iv);
   }, []);
 
-  // Main typing loop — continuous, no pauses
+  // Measure available height and calculate max lines
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const parent = el.closest('.absolute');
+    if (!parent) return;
+    const parentRect = parent.getBoundingClientRect();
+    const available = parentRect.bottom - parentRect.top - 60; // padding
+    const lines = Math.max(5, Math.floor(available / LINE_HEIGHT));
+    setMaxLines(Math.min(lines, MESSAGES.length));
+  }, []);
+
+  // Typing engine — types current line, then appends and moves to next
   useEffect(() => {
     let running = true;
+    let pauseTimer = 0;
+    let msgIndex = 0;
+    let charIndex = 0;
+    let accumulated = '';
+    let lineBuffer = '';
+    let phase: 'typing' | 'pause' = 'typing';
 
     const tick = (now: number) => {
       if (!running) return;
 
-      if (now - lastCharTimeRef.current >= TYPING_SPEED) {
-        lastCharTimeRef.current = now;
-        const msg = MESSAGES[msgIndexRef.current];
-        if (charIndexRef.current < msg.length) {
-          charIndexRef.current++;
-          setDisplayText(msg.slice(0, charIndexRef.current));
+      if (phase === 'typing') {
+        // Type one character
+        const msg = MESSAGES[msgIndex];
+        if (charIndex < msg.length) {
+          charIndex++;
+          lineBuffer = msg.slice(0, charIndex);
+          setCurrentLine(lineBuffer);
         } else {
-          // Finished → immediately next message
-          msgIndexRef.current = (msgIndexRef.current + 1) % MESSAGES.length;
-          charIndexRef.current = 0;
-          setDisplayText('');
+          // Message complete → append and pause
+          accumulated += (accumulated ? '\n' : '') + msg;
+          lineBuffer = '';
+
+          // Trim oldest lines if exceeding max
+          const lines = accumulated.split('\n');
+          if (lines.length > maxLines) {
+            accumulated = lines.slice(lines.length - maxLines).join('\n');
+          }
+
+          setTypedText(accumulated);
+          setCurrentLine('');
+          msgIndex = (msgIndex + 1) % MESSAGES.length;
+          charIndex = 0;
+          phase = 'pause';
+          pauseTimer = now;
+        }
+      } else if (phase === 'pause') {
+        if (now - pauseTimer >= PAUSE_BETWEEN) {
+          phase = 'typing';
         }
       }
 
@@ -103,15 +126,13 @@ export const MissionTerminal: React.FC = () => {
     };
 
     requestAnimationFrame(tick);
-    return () => {
-      running = false;
-    };
-  }, []);
+    return () => { running = false; };
+  }, [maxLines]);
 
   return (
-    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[720px] px-4 pointer-events-none">
-      {/* Terminal window frame */}
+    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[740px] px-4 pointer-events-none">
       <div
+        ref={containerRef}
         className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15"
         style={{
           boxShadow: '0 0 20px rgba(16, 185, 129, 0.05), inset 0 0 20px rgba(16, 185, 129, 0.02)',
@@ -127,27 +148,29 @@ export const MissionTerminal: React.FC = () => {
         />
 
         {/* Top bar */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-emerald-500/10">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-emerald-500/10">
           <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
           <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
           <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
-          <span className="text-[8px] text-emerald-500/40 font-mono ml-1 tracking-widest uppercase">
+          <span className="text-[9px] text-emerald-500/40 font-mono ml-1 tracking-widest uppercase">
             veridd://mission-control
           </span>
         </div>
 
-        {/* Terminal content */}
-        <div className="px-3 py-2.5 font-mono" style={{ minHeight: '3.6em' }}>
+        {/* Terminal content — grows to fill space */}
+        <div
+          className="px-3 py-2.5 font-mono overflow-hidden"
+          style={{ minHeight: `${maxLines * LINE_HEIGHT + 8}px`, maxHeight: `${maxLines * LINE_HEIGHT + 16}px` }}
+        >
           <span
-            className="text-xs leading-relaxed"
+            className="text-xs leading-relaxed whitespace-pre-wrap break-all"
             style={{
               color: '#34d399',
               textShadow: '0 0 6px rgba(52, 211, 153, 0.3)',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
             }}
           >
-            {displayText}
+            {typedText}
+            {(typedText ? '\n' : '') + currentLine}
             {showCursor && (
               <span
                 className="ml-0.5 font-bold"
@@ -162,12 +185,10 @@ export const MissionTerminal: React.FC = () => {
           </span>
         </div>
 
-        {/* Bottom glow line */}
+        {/* Bottom glow */}
         <div
           className="h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent"
-          style={{
-            animation: 'terminalGlow 3s ease-in-out infinite',
-          }}
+          style={{ animation: 'terminalGlow 3s ease-in-out infinite' }}
         />
       </div>
     </div>
