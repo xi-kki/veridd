@@ -154,8 +154,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         if (n >= HOVER_THRESHOLD) {
           setCaught(true);
           attractedRef.current = true;
-          setBtnBlink(true);
-          setTimeout(() => setBtnBlink(false), 800);
+          setBtnBlink(true);  // glows forever until clicked
         } else if (n >= 5) {
           attractedRef.current = true;
           setBtnBlink(true);
@@ -191,9 +190,9 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       const streak = hoverStreakRef.current;
 
       if (caught && attractedRef.current) {
-        const pullStrength = Math.min(dist * 0.004, 0.15);
-        velRef.current.x += (dx / (dist || 1)) * pullStrength;
-        velRef.current.y += (dy / (dist || 1)) * pullStrength;
+        // Drift smoothly to center
+        velRef.current.x += (50 - cardX) * 0.006;
+        velRef.current.y += (42 - cardY) * 0.006;
       } else if (!caught && streak >= 5 && streak < HOVER_THRESHOLD) {
         const pullStrength = Math.min(dist * 0.003, 0.1);
         velRef.current.x += (dx / (dist || 1)) * pullStrength;
@@ -506,7 +505,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
                 <button onClick={handleConnect}
                   className={`px-4 py-2 text-white text-xs font-bold rounded-lg transition-all duration-300 cursor-pointer flex items-center gap-1.5 ${
                     btnBlink
-                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 scale-105 shadow-[0_0_30px_#a855f7]'
+                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 scale-105 animate-pulse shadow-[0_0_30px_#a855f7]'
                       : 'bg-violet-600 hover:bg-violet-500'
                   } shadow-lg shadow-violet-500/25`}
                 >
