@@ -123,7 +123,7 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
       const storage = new VeriddStorage();
 
       // Store action + review on 0G Storage
-      const [actionRoot, reviewRoot] = await Promise.all([
+      const [actionResult, reviewResult] = await Promise.all([
         storage.storeAction({
           agentId: String(agentId),
           actionType: action.type,
@@ -144,8 +144,8 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
       await chain.submitReview(
         agentId,
         review.score,
-        actionRoot,
-        reviewRoot,
+        actionResult.root,
+        reviewResult.root,
         review.reasoning.slice(0, 100),
       );
 

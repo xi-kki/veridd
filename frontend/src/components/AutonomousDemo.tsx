@@ -77,16 +77,16 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
       addLog('🤖', `${agentA.name} executes: ${action.type.replace('_', ' ')}`, 'text-violet-300');
       
       const storage = new VeriddStorage();
-      const actionRoot = await storage.storeAction({
+      const actionResult = await storage.storeAction({
         agentId: String(agentA.agentId),
         actionType: action.type,
         input: action.input,
         output: action.output,
         timestamp: Date.now(),
       });
-      addLog('💾', `0G Storage: action proof stored → ${actionRoot.slice(0, 10)}...`, 'text-emerald-400');
+      addLog('💾', `0G Storage: action proof stored → ${actionResult.root.slice(0, 10)}...`, 'text-emerald-400');
 
-      const actionId = await chain.submitAction(action.type, actionRoot);
+      const actionId = await chain.submitAction(action.type, actionResult.root);
       addLog('⛓️', `0G Chain: Action #${actionId} recorded for ${agentA.name}`, 'text-cyan-400');
 
       await delay(2000);
@@ -113,7 +113,7 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
       // ── Agent B submits review on-chain ──
       addLog('✍️', `${agentB.name} submitting review on 0G Chain...`, 'text-violet-400');
 
-      const reviewRoot = await storage.storeReview({
+      const reviewResult = await storage.storeReview({
         agentId: String(agentA.agentId),
         reviewerId: chain.address || '',
         score: review.score,
@@ -125,8 +125,8 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
       await chain.submitReview(
         agentA.agentId,
         review.score,
-        actionRoot,
-        reviewRoot,
+        actionResult.root,
+        reviewResult.root,
         review.reasoning.slice(0, 100),
       );
 
