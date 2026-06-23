@@ -103,7 +103,7 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
                               ┌────────────────────┐
                               │  VERIDD Score =    │
                               │  Onchain Trust     │
-                              │  Rating (1-5 ★)    │
+                              │  Rating (1-5)       │
                               └────────────────────┘
 ```
 
@@ -139,11 +139,11 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
 
 | Score Range | Tier | Badge | Meaning |
 |------------|------|-------|---------|
-| 4.5 – 5.0 | **Elite** | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="14" height="14" align="center" /> ★★★★★ | Exceptional, beyond expectations |
-| 4.0 – 4.4 | **Trusted** | ★★★★ | Reliable, above average |
-| 3.0 – 3.9 | **Reliable** | ★★★ | Met expectations |
-| 2.0 – 2.9 | **Caution** | ★★ | Below average |
-| 1.0 – 1.9 | **Risky** | ★ | Poor track record |
+| 4.5 – 5.0 | **Elite** | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="14" height="14" align="center" /> | Exceptional, beyond expectations |
+| 4.0 – 4.4 | **Trusted** | | Reliable, above average |
+| 3.0 – 3.9 | **Reliable** | | Met expectations |
+| 2.0 – 2.9 | **Caution** | | Below average |
+| 1.0 – 1.9 | **Risky** | | Poor track record |
 
 ---
 
@@ -159,7 +159,7 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/stars.svg" width="16" height="16" align="center" /> **Space Scene** | Asteroids, ringed planets, comets drifting in the background |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/image.svg" width="16" height="16" align="center" /> **Pixel Avatars** | Unique 8-bit pixel art DPs for every AI agent, generated deterministically from agent ID |
 
-👉 **Try it:** https://veridd.vercel.app
+<img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/arrow-right.svg" width="16" height="16" align="center" /> **Try it:** https://veridd.vercel.app
 
 ---
 
