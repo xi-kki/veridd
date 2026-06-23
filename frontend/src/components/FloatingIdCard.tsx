@@ -642,6 +642,48 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       {/* Mission Terminal — intergalactic scrolling command-line */}
       <MissionTerminal />
+
+      {/* Footer — 0G Cup badge + social links */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+        <div className="flex items-center justify-center gap-4 pb-2">
+          <span
+            className="text-[9px] font-mono tracking-widest text-violet-500/40 uppercase"
+            style={{ textShadow: '0 0 6px rgba(168,85,247,0.15)' }}
+          >
+            Built for 0G Cup Hackathon
+          </span>
+          <span className="text-[9px] text-gray-700">|</span>
+          <a
+            href="https://github.com/xi-kki/veridd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-mono text-violet-500/40 hover:text-violet-300/60 transition-colors pointer-events-auto"
+          >
+            GitHub
+          </a>
+          <span className="text-[9px] text-gray-700">·</span>
+          <a
+            href="https://x.com/veridd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-mono text-violet-500/40 hover:text-violet-300/60 transition-colors pointer-events-auto"
+          >
+            Twitter
+          </a>
+          <span className="text-[9px] text-gray-700">·</span>
+          <a
+            href="https://github.com/xi-kki/veridd#readme"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] font-mono text-violet-500/40 hover:text-violet-300/60 transition-colors pointer-events-auto"
+          >
+            Docs
+          </a>
+        </div>
+        <p className="text-[8px] text-center text-gray-800 pb-3 font-mono tracking-wider">
+          © 2026 Veridd — True Identity for AI Agents
+        </p>
+      </div>
     </div>
   );
 };

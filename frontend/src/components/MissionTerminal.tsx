@@ -128,7 +128,7 @@ export const MissionTerminal: React.FC = () => {
   }, []);
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-[600px] px-4 pointer-events-none">
+    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[600px] px-4 pointer-events-none">
       {/* Terminal window frame */}
       <div
         className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15 overflow-hidden"
