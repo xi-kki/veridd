@@ -149,7 +149,7 @@ export const MissionTerminal: React.FC = () => {
   }, [MESSAGES_SAFE.length]);
 
   return (
-    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[740px] px-4 pointer-events-none">
+    <div className="absolute bottom-[120px] left-1/2 -translate-x-1/2 w-full max-w-[740px] px-4 pointer-events-none">
       <div
         ref={containerRef}
         className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15"

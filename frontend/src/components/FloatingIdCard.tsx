@@ -8,7 +8,7 @@ interface Props {
 }
 
 const HOVER_THRESHOLD = 4;
-const BOUNDS = { xMin: 12, xMax: 88, yMin: 12, yMax: 80 };
+const BOUNDS = { xMin: 12, xMax: 88, yMin: 12, yMax: 65 };
 const CENTER = { x: 50, y: 42 };
 const REPEL_STRENGTH = 0.45; // Strong dodge — card really runs away
 const APPROACH_SPEED = 0.015; // Eager pull toward cursor
