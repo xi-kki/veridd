@@ -7,9 +7,11 @@ interface Props {
   onConnect: () => void;
 }
 
-const HOVER_THRESHOLD = 5;
+const HOVER_THRESHOLD = 8;
 const BOUNDS = { xMin: 15, xMax: 85, yMin: 15, yMax: 80 };
 const CENTER = { x: 50, y: 42 };
+const REPEL_STRENGTH = 0.22; // How hard the card dodges cursor
+const APPROACH_SPEED = 0.005; // How eagerly it returns
 
 /**
  * Floating VERIDD Identity Card — superhero physics, 8-hover mechanic,
@@ -56,7 +58,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     Array<{ id: number; x: number; y: number; size: number; opacity: number }>
   >([]);
   const [mousePct, setMousePct] = useState({ x: 50, y: 50 });
-  const [cardPixel, setCardPixel] = useState({ x: 0, y: 0 });
 
   // ───── Space objects (stable across renders) ─────────────────────────
   const spaceObjects = useMemo(() => {
@@ -136,16 +137,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setMouseOnScreen(true);
       setMousePct({ x: mx, y: my });
 
-      // Compute card pixel position for rocket orientation
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const cp = {
-          x: (cardX / 100) * rect.width - 150 + 140, // center of 280px card
-          y: (cardY / 100) * rect.height - 110 + 105, // center of 210px card+header
-        };
-        setCardPixel(cp);
-      }
-
       const targetTilt = Math.max(-25, Math.min(25, -mouseVelRef.current.x * 0.3));
       setRocketTilt((prev) => prev + (targetTilt - prev) * 0.15);
 
@@ -215,6 +206,9 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   // Phase 3 (caught):      Card returns to center, button activates
   //   → User can finally click Connect Wallet
   //
+  // Rocket orientation: The rocket (cursor) points at the card like a
+  // spaceship orbiting a planet — always facing the center of attraction.
+  //
   // Damping 0.965 + overshoot = fluid rubber-band feel
   // Two overlapping sine waves for organic idle breathing
   useEffect(() => {
@@ -223,7 +217,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       if (!running) return;
       floatTime.current += 0.016;
 
-      // Organic idle float
+      // Organic idle float — two overlapping sine waves
       const floatX =
         Math.sin(floatTime.current * 0.4) * 1.8 + Math.sin(floatTime.current * 0.12) * 1.2;
       const floatY =
@@ -239,29 +233,29 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       if (caught) {
         // ── Phase 3: Caught! Return to center smoothly ──
-        velRef.current.x += (CENTER.x - cardX) * 0.01;
-        velRef.current.y += (CENTER.y - cardY) * 0.01;
+        velRef.current.x += (CENTER.x - cardX) * 0.012;
+        velRef.current.y += (CENTER.y - cardY) * 0.012;
       } else if (mouseActive) {
         if (streak < 5) {
-          // ── Phase 1: "Can't catch me!" — repel ──
-          // Card pushes away from cursor when close
-          if (dist < 28 && dist > 0.5) {
-            const repel = ((28 - dist) / 28) * 0.15;
+          // ── Phase 1: "Can't catch me!" — STRONG REPEL ──
+          // Card aggressively pushes away from cursor
+          if (dist < 30 && dist > 0.5) {
+            const repel = ((30 - dist) / 30) * REPEL_STRENGTH;
             velRef.current.x += -(dx / dist) * repel;
             velRef.current.y += -(dy / dist) * repel * 0.6;
           }
           // Gentle center pull when far
-          velRef.current.x += (CENTER.x - cardX) * 0.0012;
-          velRef.current.y += (CENTER.y - cardY) * 0.0012;
+          velRef.current.x += (CENTER.x - cardX) * 0.001;
+          velRef.current.y += (CENTER.y - cardY) * 0.001;
         } else {
-          // ── Phase 2: "Okay fine..." — approach ──
-          // Card gently drifts toward cursor
-          const pull = Math.min(dist * 0.0035, 0.12);
+          // ── Phase 2: "Okay fine..." — CLEAR APPROACH ──
+          // Card drifts toward cursor with visible pull
+          const pull = Math.min(dist * APPROACH_SPEED, 0.15);
           velRef.current.x += (dx / (dist || 1)) * pull;
           velRef.current.y += (dy / (dist || 1)) * pull * 0.7;
-          // Also slight center pull (so it doesn't stick to cursor)
-          velRef.current.x += (CENTER.x - cardX) * 0.0015;
-          velRef.current.y += (CENTER.y - cardY) * 0.0015;
+          // Soft center pull to avoid sticking to cursor
+          velRef.current.x += (CENTER.x - cardX) * 0.001;
+          velRef.current.y += (CENTER.y - cardY) * 0.001;
         }
       } else {
         // No mouse — drift back to center
@@ -270,8 +264,8 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       }
 
       // Low damping = fluid, floaty overshoot
-      velRef.current.x *= 0.965;
-      velRef.current.y *= 0.965;
+      velRef.current.x *= 0.962;
+      velRef.current.y *= 0.962;
 
       let newX = cardX + velRef.current.x + floatX * 0.004;
       let newY = cardY + velRef.current.y + floatY * 0.004;
@@ -281,7 +275,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setCardX(newX);
       setCardY(newY);
 
-      // Tilt — alive, responsive
+      // Tilt — responsive to velocity, card feels alive
       setTilt((prev) => ({
         rx:
           prev.rx +
@@ -291,27 +285,25 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           (Math.max(-14, Math.min(14, velRef.current.x * 0.6)) - prev.ry) * 0.06,
       }));
 
-      // Compute card pixel pos for rocket orientation
-      if (containerRef.current) {
+      // ── Rocket orients toward card (like orbiting a planet) ──
+      // The rocket (cursor) should always face the card, like a ship
+      // circling a planet. We calculate the angle from cursor → card
+      // and blend it with velocity for natural movement.
+      if (mouseOnScreen && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        setCardPixel({
-          x: (cardX / 100) * rect.width - 150 + 140,
-          y: (cardY / 100) * rect.height - 110 + 105,
-        });
-      }
-
-      // Rocket tilt toward card (blended with velocity)
-      if (mouseOnScreen) {
-        const cp = cardPixel;
-        const dxToCard = cp.x - cursorPos.x;
-        const dyToCard = cp.y - cursorPos.y;
-        if (Math.abs(dxToCard) > 5 || Math.abs(dyToCard) > 5) {
+        // Card center in pixels
+        const cardPx = (cardX / 100) * rect.width;
+        const cardPy = (cardY / 100) * rect.height;
+        // Angle from cursor position toward card center
+        const dxToCard = cardPx - cursorPos.x;
+        const dyToCard = cardPy - cursorPos.y;
+        if (Math.abs(dxToCard) > 2 || Math.abs(dyToCard) > 2) {
           const angleToCard = Math.atan2(dyToCard, dxToCard) * (180 / Math.PI);
-          // Blend: 40% face-card + 60% velocity-based
-          const velTilt = -mouseVelRef.current.x * 0.3;
-          const blended = angleToCard * 0.4 + velTilt * 0.6;
-          const clamped = Math.max(-30, Math.min(30, blended));
-          setRocketTilt((prev) => prev + (clamped - prev) * 0.12);
+          // Blend: 50% face-card orbit + 50% velocity for natural feel
+          const velTilt = -mouseVelRef.current.x * 0.25;
+          const blended = angleToCard * 0.5 + velTilt * 0.5;
+          const clamped = Math.max(-35, Math.min(35, blended));
+          setRocketTilt((prev) => prev + (clamped - prev) * 0.1);
         }
       }
 
@@ -335,7 +327,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [cardX, cardY, caught, connecting, mouseOnScreen, cursorPos.x, cursorPos.y, cardPixel.x, cardPixel.y]);
+  }, [cardX, cardY, caught, connecting, mouseOnScreen, cursorPos.x, cursorPos.y]);
 
   // ───── Connect handler ───────────────────────────────────────────────
   const handleConnect = useCallback(() => {

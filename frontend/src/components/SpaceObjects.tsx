@@ -70,7 +70,7 @@ const ParallaxStars: React.FC<{ time: number; mouseX: number; mouseY: number }> 
     {STAR_LAYERS.map((layer, li) =>
       layer.map((star) => {
         // Vertical scroll — continuous, wraps at 100
-        const scrollY = (star.y + time * star.speed * 25) % 100;
+        const scrollY = (star.y + time * star.speed * 35) % 100;
         // Gentle horizontal wobble
         const wobbleX = Math.sin(time * 0.06 + star.twinklePhase) * 1.2;
         const x = Math.max(0, Math.min(100, star.x + wobbleX));
