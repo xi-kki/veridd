@@ -12,8 +12,8 @@
 <br>
 
 <p align="center">
-  <a href="https://veridd.netlify.app">
-    <img src="https://img.shields.io/badge/demo-live-8B5CF6?style=for-the-badge&logo=netlify&logoColor=white" alt="Live Demo">
+  <a href="https://veridd.vercel.app">
+    <img src="https://img.shields.io/badge/demo-live-8B5CF6?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo">
   </a>
   <a href="https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88">
     <img src="https://img.shields.io/badge/contract-deployed-22C55E?style=for-the-badge&logo=ethereum&logoColor=white" alt="Contract">
@@ -34,7 +34,7 @@
 
 | Resource                   | Link                                                                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 🌐 **Live Demo**           | [veridd.netlify.app](https://veridd.netlify.app)                                                                                   |
+| 🌐 **Live Demo**           | [veridd.vercel.app](https://veridd.vercel.app)                                                                                   |
 | 📄 **Contract (Verified)** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 | 🖼️ **Screenshot**          | [View](https://files.catbox.moe/tflwui.PNG)                                                                                        |
 | 🎥 **Demo Video**          | _(coming soon)_                                                                                                                    |
@@ -45,29 +45,29 @@
 
 ## 🎯 One-Line Pitch
 
-**Trustpilot for AI agents — with cryptographic proof, powered by 0G.**
+**VERIDD = credit score for AI agents. Immutable. Onchain. Powered by 0G.**
 
-Every AI agent gets a verifiable, onchain credit score they earn through real work — not claims. Good agents rise. Bad agents get exposed. Anyone can verify every action.
-
----
-
-## ❓ Problem
-
-AI agents are exploding across DeFi, trading, analytics, auditing, and automation. But there's **no way to know if an agent is reliable** before trusting it with access, data, or payment.
-
-Current reputation systems are:
-
-- ❌ Centralized — one company controls the data
-- ❌ Opaque — no way to verify claims
-- ❌ Siloed — reputation doesn't travel between platforms
-
-**This is a $1B problem.** As AI agents handle more value, trust becomes the bottleneck.
+Every AI agent earns a verifiable reputation through real work — not marketing. Good agents rise to the top. Bad actors get exposed. Anyone can verify any action with cryptographic proof.
 
 ---
 
-## ✅ Solution
+## ❓ The Problem
 
-VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** built entirely on 0G's decentralized stack:
+AI agents are taking over DeFi, trading, analytics, auditing, and automation. But there's **zero way to know if an agent is trustworthy** before handing it access, data, or money.
+
+Existing reputation systems fail on every front:
+
+- ❌ **Centralized** — One company owns your data. They can change the rules.
+- ❌ **Opaque** — Claims without proof. Marketing, not merit.
+- ❌ **Siloed** — Reputation doesn't travel. Start from zero on every platform.
+
+**This is a billion-dollar blindspot.** As AI agents manage more value every day, trust is the bottleneck holding everything back.
+
+---
+
+## ✅ The Solution
+
+VERIDD issues every AI agent an **immutable, verifiable, onchain credit score** — built exclusively on 0G's decentralized infrastructure:
 
 | 0G Product        | What VERIDD Uses It For                                                      |
 | ----------------- | ---------------------------------------------------------------------------- |
@@ -157,7 +157,7 @@ VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** b
 | 🎉 **Celebration Burst**   | 60-particle burst on connect click, trust ticker counts to 12,847 agents                                       |
 | 🌌 **Space Scene**         | Asteroids, ringed planets, comets drifting in the background                                                   |
 
-👉 **Try it:** https://veridd.netlify.app
+👉 **Try it:** https://veridd.vercel.app
 
 ---
 
@@ -243,7 +243,7 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 - [x] ✅ Smart contract written (VeriddReputation.sol)
 - [x] ✅ Contract deployed to 0G Galileo Testnet
 - [x] ✅ 4 0G products used (Chain, Storage, Compute, Agentic ID)
-- [x] ✅ Live frontend at [veridd.netlify.app](https://veridd.netlify.app)
+- [x] ✅ Live frontend at [veridd.vercel.app](https://veridd.vercel.app)
 - [ ] 🎥 **Demo video** — record 2-min walkthrough, upload to YouTube/Drive, add link below
       → _Link: (coming soon)_
 - [x] 📦 Public GitHub repo
@@ -300,7 +300,7 @@ The bot:
 <p align="center">
   <i>Built during the 0G Zero Cup 2026 — Global Vibe Coding Tournament</i>
   <br>
-  <a href="https://veridd.netlify.app">🌐 Live Demo</a> ·
+  <a href="https://veridd.vercel.app">🌐 Live Demo</a> ·
   <a href="https://github.com/xi-kki/veridd">📦 Source</a> ·
   <a href="https://x.com/vytalique">🐦 @vytalique</a>
 </p>
