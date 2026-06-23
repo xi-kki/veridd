@@ -1,10 +1,8 @@
 /**
- * Veridd — 0G Compute Integration
+ * Veridd — 0G Compute Integration (Demo)
  *
- * Browser-compatible AI inference for peer review scoring.
- * Two modes:
- *   Router mode — Calls 0G Compute Router API (needs API key)
- *   Simulation mode — Deterministic scoring fallback for demo
+ * Deterministic scoring simulation for the Zero Cup demo.
+ * In production, replace with @0gfoundation/0g-compute-ts-sdk.
  */
 
 export interface ReviewResult {
@@ -15,23 +13,12 @@ export interface ReviewResult {
 }
 
 /**
- * VERIDD review prompt — instructs the LLM to score agent actions 1–5.
+ * Demo peer-review agent — scores actions based on output quality heuristics.
+ * Extendable: add a real LLM call (e.g. 0G Compute Broker) when an API key is available.
  */
-const SYSTEM_PROMPT =
-  'You are a VERIDD reviewer scoring AI agent actions 1-5.\n' +
-  'Score based on: correctness, quality, safety, efficiency.\n' +
-  '1=Harmful 2=Below expectations 3=Met expectations 4=Above expectations 5=Exceptional\n' +
-  'Respond with JSON: {score, reasoning, confidence, flags}';
-
 export class VeriddCompute {
-  constructor(private apiKey?: string) {}
-
   /**
-   * Review an agent action and return a VERIDD score.
-   *
-   * Attempts real inference via 0G Compute's provider network (Broker mode).
-   * Falls back to deterministic simulation if the network is unreachable
-   * or no API key is provided.
+   * Score an agent action 1–5 based on output quality heuristics.
    */
   async reviewAction(action: {
     agentName: string;
@@ -39,83 +26,12 @@ export class VeriddCompute {
     input: string;
     output: string;
   }): Promise<ReviewResult> {
-    const safeAction = {
-      agentName: action.agentName || 'Unknown Agent',
-      actionType: action.actionType || 'general',
-      input: (action.input || 'No input provided').slice(0, 2000),
-      output: (action.output || 'No output provided').slice(0, 2000),
-    };
-
-    // Try real inference via 0G Compute Broker
-    const result = await this.tryBrokerReview(safeAction);
-    if (result) return result;
-
-    // Fallback to simulation
-    return this.simulateReview(safeAction);
-  }
-
-  /**
-   * Attempt inference via 0G Compute — uses the Router API if an API key is set.
-   * Returns null if no API key is configured, falling back to simulation.
-   */
-  private async tryBrokerReview(action: {
-    agentName: string;
-    actionType: string;
-    input: string;
-    output: string;
-  }): Promise<ReviewResult | null> {
-    if (!this.apiKey) return null;
-    try {
-      const response = await fetch('https://compute.0g.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3-70b',
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: JSON.stringify(action) },
-          ],
-          temperature: 0.3,
-          response_format: { type: 'json_object' },
-        }),
-      });
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) return null;
-
-      const parsed = JSON.parse(content);
-      return {
-        score: Math.max(1, Math.min(5, Number(parsed.score) || 3)),
-        reasoning: parsed.reasoning || 'No detailed reasoning provided.',
-        confidence: Math.min(1, Math.max(0, Number(parsed.confidence) || 0.7)),
-        flags: Array.isArray(parsed.flags) ? parsed.flags : undefined,
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Deterministic simulation fallback for Zero Cup demo.
-   * Scores actions based on output length, error keywords, and structure.
-   */
-  private simulateReview(action: {
-    agentName: string;
-    actionType: string;
-    input: string;
-    output: string;
-  }): ReviewResult {
-    const { output } = action;
+    const { output, input } = action;
     const len = output.length;
     const hasError = /error|fail|crash|bug/i.test(output);
     const isDetailed = len > 100;
     const hasData = /[\[{]/.test(output);
+    const matchesInput = input.length > 10 && output.includes(input.slice(0, 20));
 
     let score = 3;
     let reasoning = 'Action met basic expectations.';
@@ -123,15 +39,15 @@ export class VeriddCompute {
     if (hasError) {
       score = 1;
       reasoning = 'Action produced errors that need investigation.';
-    } else if (isDetailed && hasData) {
+    } else if (isDetailed && hasData && matchesInput) {
       score = 5;
-      reasoning = 'Exceptional analysis with structured data and thorough reasoning.';
-    } else if (isDetailed) {
+      reasoning = 'Exceptional analysis with structured data matching the input context.';
+    } else if (isDetailed && hasData) {
       score = 4;
-      reasoning = 'Above average output with detailed reasoning.';
+      reasoning = 'Above average with structured output and detailed reasoning.';
     } else if (len < 30) {
       score = 2;
-      reasoning = 'Output was too brief. More detail needed.';
+      reasoning = 'Output too brief. More detail needed for a complete review.';
     }
 
     return {
