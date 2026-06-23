@@ -128,10 +128,10 @@ export const MissionTerminal: React.FC = () => {
   }, []);
 
   return (
-    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[600px] px-4 pointer-events-none">
+    <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[720px] px-4 pointer-events-none">
       {/* Terminal window frame */}
       <div
-        className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15 overflow-hidden"
+        className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15"
         style={{
           boxShadow: '0 0 20px rgba(16, 185, 129, 0.05), inset 0 0 20px rgba(16, 185, 129, 0.02)',
         }}
@@ -156,13 +156,15 @@ export const MissionTerminal: React.FC = () => {
         </div>
 
         {/* Terminal content */}
-        <div className="px-3 py-2.5 font-mono" style={{ minHeight: '2.4em' }}>
+        <div className="px-3 py-2.5 font-mono" style={{ minHeight: '3.6em' }}>
           <span
             className="text-xs leading-relaxed transition-opacity duration-300"
             style={{
               color: '#34d399',
               textShadow: '0 0 6px rgba(52, 211, 153, 0.3)',
               opacity: visible ? 1 : 0,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
             }}
           >
             {displayText}
