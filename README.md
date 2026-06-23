@@ -155,6 +155,7 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
 | 🚀 **Rocket Cursor**       | Purple rocket with white outline, tilts with movement, emits exhaust fumes as you move                         |
 | 🎯 **3-Hover Mechanic**    | Card dodges twice, on 3rd reach it surrenders — connect button pulses                                          |
 | 🎉 **Celebration Burst**   | 60-particle burst on connect click, trust ticker counts to 12,847 agents                                       |
+| 📟 **Mission Terminal**    | Thin green terminal strip, 2-line typing animation, explains VERIDD flow step-by-step                          |
 | 🌌 **Space Scene**         | Asteroids, ringed planets, comets drifting in the background                                                   |
 
 👉 **Try it:** https://veridd.vercel.app
