@@ -5,7 +5,7 @@ import { ReviewPanel } from './components/ReviewPanel';
 import { FloatingIdCard } from './components/FloatingIdCard';
 import { VeriddChain } from './lib/chain';
 
-const CONTRACT_ADDRESS = '0xFAc1CE1b75A0C46C07EE6672DA97152E8e468521';
+const CONTRACT_ADDRESS = '0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c';
 
 interface Agent {
   agentId: number;

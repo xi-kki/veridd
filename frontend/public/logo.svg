@@ -1,46 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e1b4b"/>
-      <stop offset="100%" stop-color="#0f0f23"/>
-    </linearGradient>
-    <linearGradient id="v" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#6366f1"/>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
   </defs>
-
-  <!-- Rounded square background -->
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-
-  <!-- Outer double-V shield -->
-  <path d="M100 130 L256 320 L412 130 L460 180 L256 430 L52 180 Z" 
-        fill="none" stroke="url(#v)" stroke-width="10" stroke-linejoin="round" opacity="0.9"/>
-
-  <!-- Inner V -->
-  <path d="M170 185 L256 295 L342 185" 
-        fill="none" stroke="#a855f7" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
-
-  <!-- Dots (double D motif) -->
-  <circle cx="120" cy="150" r="8" fill="#34d399"/>
-  <circle cx="392" cy="150" r="8" fill="#34d399"/>
-
+  <!-- Shield outline -->
+  <path d="M60 8 L104 28 L104 52 C104 82 84 108 60 116 C36 108 16 82 16 52 L16 28 Z" fill="url(#g)" opacity="0.15" stroke="url(#g)" stroke-width="4"/>
   <!-- Checkmark -->
-  <path d="M220 270 L256 310 L310 240" 
-        fill="none" stroke="#34d399" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- VERIDD text -->
-  <text x="256" y="405" text-anchor="middle" 
-        font-family="'Courier New', monospace" font-size="36" font-weight="900" 
-        fill="#a855f7" letter-spacing="6">
-    VERIDD
-  </text>
-  <text x="256" y="438" text-anchor="middle" 
-        font-family="'Courier New', monospace" font-size="12" fill="#64748b" letter-spacing="3">
-    DECENTRALIZED REPUTATION
-  </text>
-
-  <!-- Subtle border glow -->
-  <rect width="510" height="510" x="1" y="1" rx="96" 
-        fill="none" stroke="#a855f7" stroke-width="1" opacity="0.15"/>
+  <path d="M40 60 L54 74 L80 46" stroke="#a855f7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="60" y="95" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="18" fill="#a855f7" letter-spacing="1">VERIDD</text>
 </svg>

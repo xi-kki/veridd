@@ -6,9 +6,6 @@ interface Props {
 
 /**
  * Floating VERIDD Identity Card — a prized medal suspended in deep space.
- *
- * No ribbon — just the card flying freely like a superhero. It leans into
- * movement, tilting dynamically as it drifts, dodges, and pulls toward you.
  */
 export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,12 +23,13 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   // ───── Tilt ────────────────────────────────────────────────────────────
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
 
-  // ───── 3-hover mechanic ────────────────────────────────────────────────
+  // ───── 8-hover mechanic ────────────────────────────────────────────────
   const [caught, setCaught] = useState(false);
   const [btnBlink, setBtnBlink] = useState(false);
   const hoverStreakRef = useRef(0);
   const lastHoverTime = useRef(0);
   const attractedRef = useRef(false);
+  const HOVER_THRESHOLD = 8;
 
   // ───── Celebration & connection ────────────────────────────────────────
   const [celebrating, setCelebrating] = useState(false);
@@ -44,6 +42,46 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
   const [tickerValue, setTickerValue] = useState(0);
   const tickerTarget = 12847;
+
+  // ───── Rocket cursor ───────────────────────────────────────────────────
+  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
+  const [mouseOnScreen, setMouseOnScreen] = useState(false);
+  const [rocketTilt, setRocketTilt] = useState(0);
+  const fumeIdRef = useRef(0);
+  const lastFumeTime = useRef(0);
+  const mouseVelRef = useRef({ x: 0, y: 0 });
+  const lastMousePos = useRef({ x: -100, y: -100 });
+  const [fumes, setFumes] = useState<Array<{
+    id: number; x: number; y: number;
+    size: number; opacity: number;
+  }>>([]);
+
+  // ───── Space objects ───────────────────────────────────────────────────
+  const [spaceObjects] = useState(() => {
+    const objs: Array<{
+      type: 'asteroid' | 'planet' | 'comet';
+      x: number; y: number;
+      size: number; speed: number;
+      angle: number; color: string;
+      ringSize?: number;
+    }> = [];
+    for (let i = 0; i < 6; i++) {
+      const type = (['asteroid', 'planet', 'comet'] as const)[Math.floor(Math.random() * 3)];
+      objs.push({
+        type,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: type === 'planet' ? 3 + Math.random() * 5 : 1.5 + Math.random() * 3,
+        speed: 0.01 + Math.random() * 0.03,
+        angle: Math.random() * 360,
+        color: type === 'planet'
+          ? ['#7c3aed', '#a855f7', '#22d3ee', '#f59e0b'][Math.floor(Math.random() * 4)]
+          : ['#6b7280', '#9ca3af', '#8b5cf6'][Math.floor(Math.random() * 3)],
+        ringSize: type === 'planet' ? 4 + Math.random() * 3 : undefined,
+      });
+    }
+    return objs;
+  });
 
   // ───── Track proximity ────────────────────────────────────────────────
   const checkProx = useCallback((mx: number, my: number, cx: number, cy: number) => {
@@ -76,19 +114,54 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     const mx = ((e.clientX - rect.left) / rect.width) * 100;
     const my = ((e.clientY - rect.top) / rect.height) * 100;
 
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+
+    // Mouse velocity for rocket tilt
+    mouseVelRef.current = {
+      x: px - lastMousePos.current.x,
+      y: py - lastMousePos.current.y,
+    };
+    lastMousePos.current = { x: px, y: py };
+
+    setCursorPos({ x: px, y: py });
+    setMouseOnScreen(true);
+
+    // Rocket tilt from velocity
+    const targetTilt = Math.max(-25, Math.min(25, -mouseVelRef.current.x * 0.3));
+    setRocketTilt(prev => prev + (targetTilt - prev) * 0.15);
+
+    // Throttled fumes
+    const nowMs = Date.now();
+    if (nowMs - lastFumeTime.current > 40) {
+      lastFumeTime.current = nowMs;
+      const id = fumeIdRef.current++;
+      setFumes(prev => [...prev, { id, x: px + (Math.random() - 0.5) * 4, y: py + 6 + Math.random() * 4, size: 4 + Math.random() * 6, opacity: 0.55 }]);
+      setTimeout(() => {
+        setFumes(prev => prev.filter(f => f.id !== id));
+      }, 1000);
+    }
+
     if (!caught) mouseRef.current = { x: mx, y: my };
 
     const now = Date.now();
     if (!caught && checkProx(mx, my, cardX, cardY)) {
       if (now - lastHoverTime.current > 800) {
-        const n = Math.min(hoverStreakRef.current + 1, 3);
+        const n = Math.min(hoverStreakRef.current + 1, HOVER_THRESHOLD);
         hoverStreakRef.current = n;
         lastHoverTime.current = now;
-        if (n >= 3) {
+
+        if (n >= HOVER_THRESHOLD) {
           setCaught(true);
           attractedRef.current = true;
           setBtnBlink(true);
           setTimeout(() => setBtnBlink(false), 800);
+        } else if (n >= 5) {
+          attractedRef.current = true;
+          setBtnBlink(true);
+          setTimeout(() => setBtnBlink(false), 800);
+        } else {
+          attractedRef.current = false;
         }
       }
     }
@@ -97,6 +170,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const handleMouseLeave = useCallback(() => {
     if (caught) return;
     mouseRef.current = { x: -9999, y: -9999 };
+    setMouseOnScreen(false);
   }, [caught]);
 
   // ───── Physics loop ───────────────────────────────────────────────────
@@ -114,19 +188,21 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       const dx = mouseRef.current.x - cardX;
       const dy = mouseRef.current.y - cardY;
       const dist = Math.sqrt(dx * dx + dy * dy);
+      const streak = hoverStreakRef.current;
 
       if (caught && attractedRef.current) {
-        // Magnetic pull toward cursor — smooth, like gravity
         const pullStrength = Math.min(dist * 0.004, 0.15);
         velRef.current.x += (dx / (dist || 1)) * pullStrength;
         velRef.current.y += (dy / (dist || 1)) * pullStrength;
+      } else if (!caught && streak >= 5 && streak < HOVER_THRESHOLD) {
+        const pullStrength = Math.min(dist * 0.003, 0.1);
+        velRef.current.x += (dx / (dist || 1)) * pullStrength;
+        velRef.current.y += (dy / (dist || 1)) * pullStrength;
       } else if (!caught && dist < 28 && dist > 0.5) {
-        // Repel
         const strength = ((28 - dist) / 28) * 0.12;
         velRef.current.x += -(dx / dist) * strength;
         velRef.current.y += -(dy / dist) * strength * 0.6;
       } else {
-        // Gentle drift toward center
         velRef.current.x += (50 - cardX) * 0.0008;
         velRef.current.y += (42 - cardY) * 0.0008;
       }
@@ -136,7 +212,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       let newX = cardX + velRef.current.x + floatX * 0.006;
       let newY = cardY + velRef.current.y + floatY * 0.006;
-      // Stay fully visible
       newX = Math.max(18, Math.min(82, newX));
       newY = Math.max(18, Math.min(75, newY));
 
@@ -144,14 +219,17 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setCardY(newY);
 
       // ── Superhero tilt ────────────────────────────────────────────
-      // Lean into velocity like a flying superhero
       const targetRx = -Math.max(-8, Math.min(8, velRef.current.y * 0.5));
       const targetRy = Math.max(-12, Math.min(12, velRef.current.x * 0.5));
-
       setTilt(prev => ({
         rx: prev.rx + (targetRx - prev.rx) * 0.08,
         ry: prev.ry + (targetRy - prev.ry) * 0.08,
       }));
+
+      // ── Drift fumes down ──────────────────────────────────────────
+      setFumes(prev =>
+        prev.map(f => ({ ...f, y: f.y + 0.5, size: f.size * 0.99, opacity: f.opacity * 0.98 })).filter(f => f.opacity > 0.01)
+      );
 
       // ── Ticker ─────────────────────────────────────────────────────
       if (connecting) {
@@ -177,6 +255,10 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setTimeout(() => {
         setConnecting(false);
         setTickerValue(tickerTarget);
+        // Reset card back to center
+        setCaught(false);
+        attractedRef.current = false;
+        hoverStreakRef.current = 0;
         onConnect();
       }, 2500);
     }, 1200);
@@ -187,17 +269,103 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full h-screen overflow-hidden select-none cursor-default"
+      className="relative w-full h-screen overflow-hidden select-none"
+      style={{ cursor: 'none' }}
     >
+      {/* ═══ Rocket cursor ═══ */}
+      {mouseOnScreen && (
+        <div className="absolute pointer-events-none z-[70]" style={{
+          left: cursorPos.x,
+          top: cursorPos.y,
+          transform: `translate(-50%, -50%) rotate(${rocketTilt}deg)`,
+          filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))',
+        }}>
+          <svg viewBox="0 0 40 50" width="30" height="38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* White outline glow */}
+            <ellipse cx="20" cy="30" rx="7.5" ry="15.5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            <path d="M13 22 Q20 1 27 22" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            {/* Rocket body */}
+            <ellipse cx="20" cy="30" rx="6" ry="14" fill="#7c3aed" stroke="white" strokeWidth="1.2" />
+            {/* Nose cone */}
+            <path d="M14 22 Q20 2 26 22" fill="#a855f7" stroke="white" strokeWidth="1" />
+            {/* Window */}
+            <circle cx="20" cy="24" r="3.5" fill="#1e1b4b" stroke="#c084fc" strokeWidth="0.8" />
+            <circle cx="19.5" cy="23.5" r="1.2" fill="#22d3ee" opacity="0.6" />
+            {/* Fins */}
+            <path d="M14 36 L8 46 L14 42 Z" fill="#6d28d9" stroke="white" strokeWidth="1" />
+            <path d="M26 36 L32 46 L26 42 Z" fill="#6d28d9" stroke="white" strokeWidth="1" />
+            {/* Engine glow */}
+            <ellipse cx="20" cy="44" rx="4" ry="2" fill="#c084fc" opacity="0.6" />
+            <ellipse cx="20" cy="44" rx="2.5" ry="1" fill="#e9d5ff" opacity="0.8" />
+          </svg>
+        </div>
+      )}
+
+      {/* ═══ Rocket exhaust fumes ═══ */}
+      {fumes.map(f => (
+        <div key={f.id} className="absolute pointer-events-none z-60 rounded-full" style={{
+          left: f.x, top: f.y,
+          width: f.size + 'px', height: f.size + 'px',
+          backgroundColor: 'white', opacity: f.opacity,
+          transform: 'translate(-50%, -50%)',
+          boxShadow: `0 0 ${f.size * 0.5}px rgba(255,255,255,${f.opacity * 0.3})`,
+        }} />
+      ))}
+
+      {/* ═══ Space objects ═══ */}
+      {spaceObjects.map((obj, i) => {
+        const time = floatTime.current;
+        const driftX = obj.type === 'comet' ? time * obj.speed * 30 : Math.sin(time * obj.speed + i) * 5;
+        const driftY = Math.cos(time * obj.speed * 0.7 + i) * 3;
+        const x = obj.x + driftX;
+        const y = obj.y + driftY;
+        const opacity = 0.15 + (obj.type === 'comet' ? Math.sin(time * obj.speed * 2 + i) * 0.1 + 0.15 : 0.08);
+
+        return (
+          <div key={i} className="absolute pointer-events-none" style={{
+            left: `${x}%`, top: `${y}%`,
+            opacity,
+            transform: 'translate(-50%, -50%)',
+          }}>
+            {obj.type === 'planet' && (
+              <svg width={obj.size * 6} height={obj.size * 6} viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r={obj.size * 1.5} fill={obj.color} opacity="0.6" />
+                {obj.ringSize && (
+                  <ellipse cx="10" cy="10" rx={obj.ringSize * 2} ry={obj.ringSize * 0.6}
+                    fill="none" stroke={obj.color} strokeWidth="0.5" opacity="0.4"
+                    transform={`rotate(${obj.angle}, 10, 10)`} />
+                )}
+              </svg>
+            )}
+            {obj.type === 'asteroid' && (
+              <div style={{
+                width: obj.size * 3, height: obj.size * 3,
+                backgroundColor: obj.color,
+                borderRadius: '40% 60% 55% 45% / 50% 45% 55% 50%',
+                transform: `rotate(${obj.angle + time * 20}deg)`,
+                opacity: 0.5,
+              }} />
+            )}
+            {obj.type === 'comet' && (
+              <svg width="30" height="8" viewBox="0 0 30 8">
+                <ellipse cx="4" cy="4" rx="3" ry="2" fill="white" opacity="0.7" />
+                <ellipse cx="12" cy="3.5" rx="5" ry="1.2" fill="white" opacity="0.3" />
+                <ellipse cx="20" cy="3.5" rx="7" ry="0.6" fill="white" opacity="0.15" />
+              </svg>
+            )}
+          </div>
+        );
+      })}
+
       {/* ═══ Star field ═══ */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }).map((_, i) => (
+        {Array.from({ length: 40 }).map((_, i) => (
           <div key={i} className="absolute rounded-full bg-white" style={{
-            width: (Math.random() * 2 + 1) + 'px',
-            height: (Math.random() * 2 + 1) + 'px',
+            width: (Math.random() * 2 + 0.5) + 'px',
+            height: (Math.random() * 2 + 0.5) + 'px',
             left: Math.random() * 100 + '%',
             top: Math.random() * 100 + '%',
-            opacity: Math.random() * 0.5 + 0.2,
+            opacity: Math.random() * 0.4 + 0.15,
             animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
             animationDelay: Math.random() * 2 + 's',
           }} />
@@ -222,13 +390,11 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         style={{
           left: `calc(${cardX}% - 150px)`,
           top: `calc(${cardY}% - 110px)`,
-          transform: caught
-            ? `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`
-            : `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+          transform: `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
           transition: 'transform 0.05s ease-out',
         }}
       >
-        {/* Medal loop (small, subtle) */}
+        {/* Medal loop */}
         <div className="absolute left-1/2 -top-5 z-20 pointer-events-none flex flex-col items-center" style={{ marginLeft: '-7px' }}>
           <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center" style={{
             borderColor: '#a855f7',
@@ -237,7 +403,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           }}>
             <div className="w-1 h-1 rounded-full bg-violet-400/50" />
           </div>
-          <div className="w-0.5 h-2 bg-gradient-to-b from-violet-500/60 to-violet-400/20" />
         </div>
 
         {/* Card body */}
