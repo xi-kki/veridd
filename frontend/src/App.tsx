@@ -46,8 +46,21 @@ function App() {
     if (!ch || !address) return;
     setLoading(true);
     try {
-      const a = await ch.getAgentsByOwner(address);
-      setAgents(a);
+      const ids = await ch.getAgentsByOwner(address);
+      const agentList: Agent[] = [];
+      for (const id of ids) {
+        const agent = await ch.getAgent(id);
+        if (!agent) continue;
+        const score = await ch.getReputation(id);
+        agentList.push({
+          agentId: Number(id),
+          name: agent.name,
+          description: agent.description,
+          veriddScore: score,
+          isOwner: true,
+        });
+      }
+      setAgents(agentList);
     } catch (err) {
       console.error('load agents error:', err);
     }
