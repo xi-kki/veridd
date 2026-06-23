@@ -26,16 +26,16 @@ interface Props {
   mouseY?: number;
 }
 
-// ── WARP STREAKS ──
-// Long glowing lines radiating from center, like hyperspace.
-const createWarpStreaks = (count: number) => {
-  const streaks: Array<{
+// ── WARP DOTS ──
+// Tiny dots flying outward from center at high speed.
+// Classic starfield — small, fast, visible.
+const createWarpDots = (count: number) => {
+  const dots: Array<{
     id: number;
     angle: number;
     dist: number;
     speed: number;
-    length: number;
-    width: number;
+    size: number;
     brightness: number;
     hue: 'white' | 'violet' | 'cyan';
   }> = [];
@@ -43,18 +43,17 @@ const createWarpStreaks = (count: number) => {
   const hues: ('white' | 'violet' | 'cyan')[] = ['white', 'violet', 'cyan'];
 
   for (let i = 0; i < count; i++) {
-    streaks.push({
+    dots.push({
       id: i,
       angle: Math.random() * Math.PI * 2,
       dist: Math.random() * 100,
-      speed: 0.4 + Math.random() * 1.6,
-      length: 4 + Math.random() * 12,
-      width: 0.5 + Math.random() * 1.2,
+      speed: 0.6 + Math.random() * 1.8,
+      size: 0.8 + Math.random() * 1.8,
       brightness: 0.3 + Math.random() * 0.7,
       hue: hues[Math.floor(Math.random() * 3)],
     });
   }
-  return streaks;
+  return dots;
 };
 
 // Center of warp tunnel
@@ -62,26 +61,20 @@ const CX = 50;
 const CY = 42;
 
 export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
-  const streaks = useMemo(() => createWarpStreaks(120), []);
+  const dots = useMemo(() => createWarpDots(150), []);
 
   return (
     <>
       {/* ═══ PURE BLACK VOID — already done via bg color ═══ */}
 
-      {/* ═══ WARP SPEED STREAKS ═══ */}
-      {streaks.map((s) => {
+      {/* ═══ WARP SPEED DOTS ═══ */}
+      {dots.map((d) => {
         // Distance grows outward — star flies past
-        let dist = (s.dist + time * s.speed) % 120;
+        let dist = (d.dist + time * d.speed) % 120;
 
         // Polar → cartesian
-        const x = CX + Math.cos(s.angle) * dist;
-        const y = CY + Math.sin(s.angle) * dist;
-
-        // Streak length: grows with distance (closer to edge = longer)
-        const stretch = Math.min(dist / 20, 1);
-        const streakLen = s.length * (0.5 + stretch * 2.5);
-        const h = streakLen;
-        const w = s.width;
+        const x = CX + Math.cos(d.angle) * dist;
+        const y = CY + Math.sin(d.angle) * dist;
 
         // Opacity: brightest at mid-distance, fades at edges
         const distNorm = dist / 120;
@@ -91,42 +84,28 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => {
             : distNorm > 0.85
             ? (1 - distNorm) / 0.15
             : 1;
-        const finalOpacity = s.brightness * 0.85 * opacity;
+        const finalOpacity = d.brightness * 0.9 * opacity;
 
-        // Rotation = direction of travel
-        const rotation = (s.angle * 180) / Math.PI;
-
-        // Color based on hue
-        const colors: Record<string, string> = {
-          white: 'rgba(255, 255, 255, ',
-          violet: 'rgba(196, 181, 253, ',
-          cyan: 'rgba(34, 211, 238, ',
-        };
-        const glowColors: Record<string, string> = {
-          white: `0 0 ${s.width * 2}px rgba(255,255,255,${finalOpacity * 0.15})`,
-          violet: `0 0 ${s.width * 4}px rgba(168,85,247,${finalOpacity * 0.25})`,
-          cyan: `0 0 ${s.width * 4}px rgba(34,211,238,${finalOpacity * 0.2})`,
-        };
+        // Colors
         const bgColors: Record<string, string> = {
           white: '#ffffff',
           violet: '#c4b5fd',
           cyan: '#22d3ee',
         };
+        const glow = `0 0 ${d.size * 1.5}px rgba(255,255,255,${finalOpacity * 0.15})`;
 
         return (
           <div
-            key={s.id}
-            className="absolute pointer-events-none"
+            key={d.id}
+            className="absolute pointer-events-none rounded-full"
             style={{
-              width: `${w}px`,
-              height: `${h}px`,
+              width: `${d.size}px`,
+              height: `${d.size}px`,
               left: `${x}%`,
               top: `${y}%`,
               opacity: finalOpacity,
-              backgroundColor: bgColors[s.hue],
-              borderRadius: '20%',
-              transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-              boxShadow: glowColors[s.hue],
+              backgroundColor: bgColors[d.hue],
+              boxShadow: glow,
               willChange: 'transform, opacity',
             }}
           />
