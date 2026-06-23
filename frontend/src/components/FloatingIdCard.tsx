@@ -33,6 +33,8 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
   const [cardX, setCardX] = useState(50);
   const [cardY, setCardY] = useState(42);
+  const cardXRef = useRef(50);
+  const cardYRef = useRef(42);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [caught, setCaught] = useState(false);
   const [btnBlink, setBtnBlink] = useState(false);
@@ -247,55 +249,55 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
-      const dx = mx - cardX;
-      const dy = my - cardY;
+      const cx = cardXRef.current;
+      const cy = cardYRef.current;
+      const dx = mx - cx;
+      const dy = my - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const mouseActive = mx > -1000;
       const streak = hoverStreakRef.current;
 
       if (caught) {
         // ── Phase 3: Caught! Return to center smoothly ──
-        velRef.current.x += (CENTER.x - cardX) * 0.015;
-        velRef.current.y += (CENTER.y - cardY) * 0.015;
+        velRef.current.x += (CENTER.x - cx) * 0.015;
+        velRef.current.y += (CENTER.y - cy) * 0.015;
       } else if (mouseActive) {
         if (streak < 2) {
           // ── Phase 1: "Can't catch me!" — STRONG REPEL ──
-          // Card aggressively pushes away from cursor (visible dodge)
           if (dist < 45 && dist > 0.5) {
             const repel = ((45 - dist) / 45) * REPEL_STRENGTH;
             velRef.current.x += -(dx / dist) * repel;
             velRef.current.y += -(dy / dist) * repel * 0.6;
           }
-          // Gentle center pull when cursor far away
-          velRef.current.x += (CENTER.x - cardX) * 0.0008;
-          velRef.current.y += (CENTER.y - cardY) * 0.0008;
+          velRef.current.x += (CENTER.x - cx) * 0.0008;
+          velRef.current.y += (CENTER.y - cy) * 0.0008;
         } else {
           // ── Phase 2: "Okay fine..." — STRONG APPROACH ──
-          // Card eagerly drifts toward cursor
           const pull = Math.min(dist * APPROACH_SPEED, 0.3);
           velRef.current.x += (dx / (dist || 1)) * pull;
           velRef.current.y += (dy / (dist || 1)) * pull * 0.7;
-          // Gentle center pull to avoid sticking
-          velRef.current.x += (CENTER.x - cardX) * 0.0005;
-          velRef.current.y += (CENTER.y - cardY) * 0.0005;
+          velRef.current.x += (CENTER.x - cx) * 0.0005;
+          velRef.current.y += (CENTER.y - cy) * 0.0005;
         }
       } else {
         // No mouse — drift back to center
-        velRef.current.x += (CENTER.x - cardX) * 0.005;
-        velRef.current.y += (CENTER.y - cardY) * 0.005;
+        velRef.current.x += (CENTER.x - cx) * 0.005;
+        velRef.current.y += (CENTER.y - cy) * 0.005;
       }
 
       // Low damping = fluid, floaty overshoot
       velRef.current.x *= 0.96;
       velRef.current.y *= 0.96;
 
-      let newX = cardX + velRef.current.x + floatX * 0.004;
-      let newY = cardY + velRef.current.y + floatY * 0.004;
+      let newX = cx + velRef.current.x + floatX * 0.004;
+      let newY = cy + velRef.current.y + floatY * 0.004;
       newX = Math.max(BOUNDS.xMin, Math.min(BOUNDS.xMax, newX));
       newY = Math.max(BOUNDS.yMin, Math.min(BOUNDS.yMax, newY));
 
       setCardX(newX);
       setCardY(newY);
+      cardXRef.current = newX;
+      cardYRef.current = newY;
 
       // Tilt — responsive to velocity, card feels alive
       setTilt((prev) => ({
@@ -308,13 +310,10 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       }));
 
       // ── Rocket ALWAYS faces card (like orbiting a planet) ──
-      // The SVG rocket faces UP (0°). atan2 gives 0° = RIGHT.
-      // So we add 90°: right → 90°, up → 0°, down → 180°, left → 270°.
-      // No clamp = full 360° orbit. Smooth shortest-path interpolation.
       if (mouseOnScreen && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const cardPx = (cardX / 100) * rect.width;
-        const cardPy = (cardY / 100) * rect.height;
+        const cardPx = (cx / 100) * rect.width;
+        const cardPy = (cy / 100) * rect.height;
         const dxToCard = cardPx - cursorPos.x;
         const dyToCard = cardPy - cursorPos.y;
         if (Math.abs(dxToCard) > 2 || Math.abs(dyToCard) > 2) {
@@ -348,7 +347,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [cardX, cardY, caught, connecting, mouseOnScreen, cursorPos.x, cursorPos.y]);
+  }, [caught, connecting, mouseOnScreen, cursorPos.x, cursorPos.y]);
 
   // ───── Connect handler ───────────────────────────────────────────────
   const handleConnect = useCallback(() => {

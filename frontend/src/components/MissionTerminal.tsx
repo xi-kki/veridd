@@ -66,6 +66,10 @@ export const MissionTerminal: React.FC = () => {
     return () => clearInterval(iv);
   }, []);
 
+  // ───── Edge case guards ──────────────────────────────────────────────
+  const MESSAGES_SAFE = MESSAGES.length > 0 ? MESSAGES : ['> TERMINAL INITIALIZED // AWAITING DATA...'];
+  const MAX_LINES_FALLBACK = 8;
+
   // Measure available height and calculate max lines
   useEffect(() => {
     const el = containerRef.current;
@@ -73,10 +77,18 @@ export const MissionTerminal: React.FC = () => {
     const parent = el.closest('.absolute');
     if (!parent) return;
     const parentRect = parent.getBoundingClientRect();
-    const available = parentRect.bottom - parentRect.top - 60; // padding
-    const lines = Math.max(5, Math.floor(available / LINE_HEIGHT));
-    setMaxLines(Math.min(lines, MESSAGES.length));
-  }, []);
+    const availableHeight = parentRect.bottom - parentRect.top - 60;
+    if (availableHeight <= 0) {
+      setMaxLines(MAX_LINES_FALLBACK);
+      return;
+    }
+    const lines = Math.max(5, Math.min(Math.floor(availableHeight / LINE_HEIGHT), MESSAGES_SAFE.length));
+    setMaxLines(lines);
+  }, [MESSAGES_SAFE.length]);
+
+  // Stable ref for maxLines to avoid closure staleness
+  const maxLinesRef = useRef(maxLines);
+  maxLinesRef.current = maxLines;
 
   // Typing engine — types current line, then appends and moves to next
   useEffect(() => {
@@ -92,8 +104,14 @@ export const MissionTerminal: React.FC = () => {
       if (!running) return;
 
       if (phase === 'typing') {
-        // Type one character
-        const msg = MESSAGES[msgIndex];
+        const msg = MESSAGES_SAFE[msgIndex];
+        // Guard: skip any undefined/falsy messages
+        if (!msg) {
+          msgIndex = (msgIndex + 1) % MESSAGES_SAFE.length;
+          charIndex = 0;
+          requestAnimationFrame(tick);
+          return;
+        }
         if (charIndex < msg.length) {
           charIndex++;
           lineBuffer = msg.slice(0, charIndex);
@@ -103,15 +121,16 @@ export const MissionTerminal: React.FC = () => {
           accumulated += (accumulated ? '\n' : '') + msg;
           lineBuffer = '';
 
-          // Trim oldest lines if exceeding max
+          // Trim oldest lines if exceeding max (use ref for latest value)
+          const currentMax = maxLinesRef.current;
           const lines = accumulated.split('\n');
-          if (lines.length > maxLines) {
-            accumulated = lines.slice(lines.length - maxLines).join('\n');
+          if (lines.length > currentMax) {
+            accumulated = lines.slice(lines.length - currentMax).join('\n');
           }
 
           setTypedText(accumulated);
           setCurrentLine('');
-          msgIndex = (msgIndex + 1) % MESSAGES.length;
+          msgIndex = (msgIndex + 1) % MESSAGES_SAFE.length;
           charIndex = 0;
           phase = 'pause';
           pauseTimer = now;
@@ -127,7 +146,7 @@ export const MissionTerminal: React.FC = () => {
 
     requestAnimationFrame(tick);
     return () => { running = false; };
-  }, [maxLines]);
+  }, [MESSAGES_SAFE.length]);
 
   return (
     <div className="absolute bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[740px] px-4 pointer-events-none">
