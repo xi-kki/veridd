@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield outline -->
+  <path d="M60 8 L104 28 L104 52 C104 82 84 108 60 116 C36 108 16 82 16 52 L16 28 Z" fill="url(#g)" opacity="0.15" stroke="url(#g)" stroke-width="4"/>
+  <!-- Checkmark -->
+  <path d="M40 60 L54 74 L80 46" stroke="#a855f7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="60" y="95" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="18" fill="#a855f7" letter-spacing="1">VERIDD</text>
+</svg>

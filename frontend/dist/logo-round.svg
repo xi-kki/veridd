@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="70%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </radialGradient>
+  </defs>
+  <!-- Circle background -->
+  <circle cx="128" cy="128" r="120" fill="url(#g)" opacity="0.15"/>
+  <circle cx="128" cy="128" r="120" fill="none" stroke="#a855f7" stroke-width="4" opacity="0.3"/>
+  <!-- Shield inside circle -->
+  <path d="M128 48 L172 72 L172 108 C172 156 152 190 128 204 C104 190 84 156 84 108 L84 72 Z" fill="#a855f7" opacity="0.2" stroke="#a855f7" stroke-width="5"/>
+  <!-- Checkmark -->
+  <path d="M104 128 L122 146 L152 110" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Text -->
+  <text x="128" y="230" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="28" fill="#a855f7" letter-spacing="2">VERIDD</text>
+</svg>
