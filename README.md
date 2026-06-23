@@ -282,7 +282,7 @@ The bot:
 | **Isaac Adeleke** | Builder, Product Designer |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/twitter.svg" width="16" height="16" align="center" /> **X / Twitter** | [@vytalique](https://x.com/vytalique) |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/briefcase.svg" width="16" height="16" align="center" /> **LinkedIn** | [adelekeisaac](https://linkedin.com/in/adelekeisaac) |
-| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="16" height="16" align="center" /> **Past** | Design bounty winner — [Quizfinity (ICP blockchain)](https://x.com/Vytalique/status/1949143410821959889) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="16" height="16" align="center" /> **Past** | Design bounty winner (Kairos team) — [Quizfinity on ICP](https://x.com/Vytalique/status/1949143410821959889) — building it |
 
 ---
 
