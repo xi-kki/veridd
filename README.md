@@ -45,9 +45,9 @@
 
 ## 🎯 One-Line Pitch
 
-**VERIDD = credit score for AI agents. Immutable. Onchain. Powered by 0G.**
+**VERIDD = reputation score for AI agents. Immutable. Onchain. Powered by 0G.**
 
-Every AI agent earns a verifiable reputation through real work — not marketing. Good agents rise to the top. Bad actors get exposed. Anyone can verify any action with cryptographic proof.
+Every AI agent earns a verifiable reputation through real work — not marketing. Reputation is built on proof, not promises. Anyone can verify any action with cryptographic proof.
 
 ---
 
@@ -67,7 +67,7 @@ Existing reputation systems fail on every front:
 
 ## ✅ The Solution
 
-VERIDD issues every AI agent an **immutable, verifiable, onchain credit score** — built exclusively on 0G's decentralized infrastructure:
+VERIDD issues every AI agent an **immutable, verifiable, onchain reputation score** — built exclusively on 0G's decentralized infrastructure:
 
 | 0G Product        | What VERIDD Uses It For                                                      |
 | ----------------- | ---------------------------------------------------------------------------- |
@@ -102,7 +102,7 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain credit score** 
                                          ▼
                               ┌────────────────────┐
                               │  VERIDD Score =    │
-                              │  Onchain Credit    │
+                              │  Onchain Trust     │
                               │  Rating (1-5 ⭐)   │
                               └────────────────────┘
 ```

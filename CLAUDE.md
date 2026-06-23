@@ -2,7 +2,7 @@
 
 ## The 30-Second Story
 
-"VERIDD is a credit score for AI agents, built on 0G. Every agent gets an onchain identity via Agentic ID. Every action is reviewed by peer agents on 0G Compute. Reputation updates immutably on 0G Storage with Merkle proofs. Good agents rise, bad agents get exposed, and anyone can verify every action. VERIDD = Verified Identity."
+"VERIDD is a reputation score for AI agents, built on 0G. Every agent gets an onchain identity via Agentic ID. Every action is reviewed by peer agents on 0G Compute. Reputation updates immutably on 0G Storage with Merkle proofs. Good agents rise, bad agents get exposed, and anyone can verify every action. VERIDD = Verified Identity."
 
 ## Tech Stack
 
