@@ -285,25 +285,23 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           (Math.max(-14, Math.min(14, velRef.current.x * 0.6)) - prev.ry) * 0.06,
       }));
 
-      // ── Rocket orients toward card (like orbiting a planet) ──
-      // The rocket (cursor) should always face the card, like a ship
-      // circling a planet. We calculate the angle from cursor → card
-      // and blend it with velocity for natural movement.
+      // ── Rocket ALWAYS faces card (like orbiting a planet) ──
+      // The nose of the rocket continuously points toward the card's
+      // center, regardless of where the cursor is. As the cursor moves
+      // around the card, the rocket rotates to always "look at" it —
+      // exactly like a spaceship orbiting a planet keeps its nose
+      // pointed at the planet's center.
       if (mouseOnScreen && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        // Card center in pixels
         const cardPx = (cardX / 100) * rect.width;
         const cardPy = (cardY / 100) * rect.height;
-        // Angle from cursor position toward card center
         const dxToCard = cardPx - cursorPos.x;
         const dyToCard = cardPy - cursorPos.y;
-        if (Math.abs(dxToCard) > 2 || Math.abs(dyToCard) > 2) {
-          const angleToCard = Math.atan2(dyToCard, dxToCard) * (180 / Math.PI);
-          // Blend: 50% face-card orbit + 50% velocity for natural feel
-          const velTilt = -mouseVelRef.current.x * 0.25;
-          const blended = angleToCard * 0.5 + velTilt * 0.5;
-          const clamped = Math.max(-35, Math.min(35, blended));
-          setRocketTilt((prev) => prev + (clamped - prev) * 0.1);
+        if (Math.abs(dxToCard) > 1 || Math.abs(dyToCard) > 1) {
+          // Pure angle toward card — no velocity blend
+          const targetAngle = Math.atan2(dyToCard, dxToCard) * (180 / Math.PI);
+          const clamped = Math.max(-40, Math.min(40, targetAngle));
+          setRocketTilt((prev) => prev + (clamped - prev) * 0.08);
         }
       }
 
