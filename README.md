@@ -244,10 +244,32 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 - [x] ✅ Contract deployed to 0G Galileo Testnet
 - [x] ✅ 4 0G products used (Chain, Storage, Compute, Agentic ID)
 - [x] ✅ Live frontend at [veridd.netlify.app](https://veridd.netlify.app)
-- [ ] 🎥 Demo video (recording — will add link ASAP)
+- [ ] 🎥 **Demo video** — record 2-min walkthrough, upload to YouTube/Drive, add link below
+      → _Link: (coming soon)_
 - [x] 📦 Public GitHub repo
 - [x] 🖼️ Screenshots submitted
 - [x] 📜 Open source (MIT License)
+
+---
+
+## 🤖 Autonomous Bot
+
+VERIDD includes a headless Node.js bot (`runner/agent-bot.js`) that runs the full autonomous loop:
+
+```bash
+# 1. Test Grok API key first
+node scripts/test-grok.js <your-grok-key>
+
+# 2. Run the bot
+cd runner
+GROK_KEY=<your-grok-key> node agent-bot.js <private-key> --name "Alpha"
+```
+
+The bot:
+1. Creates or reuses an agent
+2. Every 30s: generates an AI action via Grok → stores on 0G Storage → submits Merkle root on-chain
+3. Detects new actions from other agents → reviews via Grok → stores review on 0G Storage → submits score on-chain
+4. Runs indefinitely with zero human intervention
 
 ---
 
