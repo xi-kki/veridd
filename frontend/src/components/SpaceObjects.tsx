@@ -6,39 +6,40 @@
 import React from 'react';
 
 const STAR_LAYERS = (() => [
-  // Far — many tiny stars, slow scroll
-  Array.from({ length: 45 }, (_, i) => ({
+  // Far — many tiny stars, slow drift
+  Array.from({ length: 50 }, (_, i) => ({
     id: `f${i}`,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: 0.3 + Math.random() * 0.7,
+    size: 0.3 + Math.random() * 0.6,
     baseOpacity: Math.random() * 0.2 + 0.06,
-    speed: 0.006 + Math.random() * 0.01,
-    twinkleSpeed: 1.2 + Math.random() * 2,
+    speed: 0.012 + Math.random() * 0.015,
+    twinkleSpeed: 1.0 + Math.random() * 2,
     twinklePhase: Math.random() * Math.PI * 2,
   })),
-  // Mid — medium stars
-  Array.from({ length: 28 }, (_, i) => ({
+  // Mid — medium stars, moderate scroll
+  Array.from({ length: 30 }, (_, i) => ({
     id: `m${i}`,
     x: Math.random() * 100,
     y: Math.random() * 100,
     size: 0.7 + Math.random() * 1.0,
     baseOpacity: Math.random() * 0.3 + 0.12,
-    speed: 0.018 + Math.random() * 0.02,
-    twinkleSpeed: 1.0 + Math.random() * 1.5,
+    speed: 0.035 + Math.random() * 0.03,
+    twinkleSpeed: 0.8 + Math.random() * 1.5,
     twinklePhase: Math.random() * Math.PI * 2,
   })),
-  // Near — few bright stars with glow, fast (hyperspace feel)
-  Array.from({ length: 12 }, (_, i) => ({
+  // Near — bright stars + warp streaks (hyperspace feel)
+  Array.from({ length: 18 }, (_, i) => ({
     id: `n${i}`,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: 1.2 + Math.random() * 1.5,
-    baseOpacity: Math.random() * 0.4 + 0.25,
-    speed: 0.04 + Math.random() * 0.05,
-    twinkleSpeed: 0.7 + Math.random() * 1.0,
+    size: 1.0 + Math.random() * 1.5,
+    baseOpacity: Math.random() * 0.5 + 0.3,
+    speed: 0.08 + Math.random() * 0.08,
+    twinkleSpeed: 0.5 + Math.random() * 1.0,
     twinklePhase: Math.random() * Math.PI * 2,
     glow: true,
+    isStreak: i < 8, // first 8 near stars are elongated streaks
   })),
 ])();
 
@@ -69,7 +70,7 @@ const ParallaxStars: React.FC<{ time: number; mouseX: number; mouseY: number }> 
     {STAR_LAYERS.map((layer, li) =>
       layer.map((star) => {
         // Vertical scroll — continuous, wraps at 100
-        const scrollY = (star.y + time * star.speed * 20) % 100;
+        const scrollY = (star.y + time * star.speed * 25) % 100;
         // Gentle horizontal wobble
         const wobbleX = Math.sin(time * 0.06 + star.twinklePhase) * 1.2;
         const x = Math.max(0, Math.min(100, star.x + wobbleX));
@@ -78,17 +79,22 @@ const ParallaxStars: React.FC<{ time: number; mouseX: number; mouseY: number }> 
           0.5 + 0.5 * Math.sin(time * star.twinkleSpeed + star.twinklePhase);
         const opacity = star.baseOpacity * (0.4 + 0.6 * twinkle);
 
+        // Streak stars are elongated (warp speed lines)
+        const isStreak = (star as any).isStreak;
+        const streakHeight = isStreak ? 2 + star.size * 1.5 : star.size;
+
         return (
           <div
             key={star.id}
             className="absolute rounded-full pointer-events-none"
             style={{
-              width: `${star.size}px`,
-              height: `${star.size}px`,
+              width: isStreak ? `${star.size * 0.6}px` : `${star.size}px`,
+              height: `${streakHeight}px`,
               left: `${x}%`,
               top: `${scrollY}%`,
               opacity,
               backgroundColor: '#fff',
+              borderRadius: isStreak ? '40%' : '50%',
               boxShadow: star.glow
                 ? `0 0 ${star.size * 2}px rgba(168,85,247,${opacity * 0.25})`
                 : 'none',

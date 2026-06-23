@@ -56,6 +56,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     Array<{ id: number; x: number; y: number; size: number; opacity: number }>
   >([]);
   const [mousePct, setMousePct] = useState({ x: 50, y: 50 });
+  const [cardPixel, setCardPixel] = useState({ x: 0, y: 0 });
 
   // ───── Space objects (stable across renders) ─────────────────────────
   const spaceObjects = useMemo(() => {
@@ -135,6 +136,16 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setMouseOnScreen(true);
       setMousePct({ x: mx, y: my });
 
+      // Compute card pixel position for rocket orientation
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const cp = {
+          x: (cardX / 100) * rect.width - 150 + 140, // center of 280px card
+          y: (cardY / 100) * rect.height - 110 + 105, // center of 210px card+header
+        };
+        setCardPixel(cp);
+      }
+
       const targetTilt = Math.max(-25, Math.min(25, -mouseVelRef.current.x * 0.3));
       setRocketTilt((prev) => prev + (targetTilt - prev) * 0.15);
 
@@ -161,20 +172,27 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       // Hover detection
       const now = Date.now();
       const dist = Math.sqrt((mx - cardX) ** 2 + (my - cardY) ** 2);
-      if (!caught && dist < 28 && now - lastHoverTime.current > 800) {
+      // ── Playful chase sequence ──
+      // Phase 1 (streak 0-4): Card runs away — "can't catch me!"
+      // Phase 2 (streak 5-7): Card drifts toward cursor — "okay fine..."
+      // Phase 3 (streak 8):   Caught! Returns to center, button blinks
+      if (!caught && dist < 28 && now - lastHoverTime.current > 700) {
         const n = Math.min(hoverStreakRef.current + 1, HOVER_THRESHOLD);
         hoverStreakRef.current = n;
         lastHoverTime.current = now;
 
         if (n >= HOVER_THRESHOLD) {
+          // Phase 3: Caught! Back to center, connect button activates
           setCaught(true);
           attractedRef.current = true;
           setBtnBlink(true);
         } else if (n >= 5) {
+          // Phase 2: Card starts trusting — drifts toward cursor
           attractedRef.current = true;
           setBtnBlink(true);
-          setTimeout(() => setBtnBlink(false), 800);
+          setTimeout(() => setBtnBlink(false), 1000);
         } else {
+          // Phase 1: Card is shy — repels from cursor
           attractedRef.current = false;
         }
       }
@@ -188,24 +206,24 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     setMouseOnScreen(false);
   }, [caught]);
 
-  // ───── Physics loop — "5 away, 3 toward, boomerang back" ────────────
+  // ───── Physics loop — Phase 1 (run) → Phase 2 (approach) → Phase 3 (center) ──
   //
-  // How it works:
-  // 1. The card gently floats at center with organic sine-wave breathing.
-  // 2. When the cursor is >5% away: a soft magnetic pull draws the card
-  //    toward it — playful chase, not aggressive.
-  // 3. When the cursor gets <3% away: the card briefly follows (curiosity)
-  //    then a spring force boomerangs it back toward center.
-  // 4. Low damping (0.965) gives a fluid, rubber-band feel with overshoot.
-  // 5. After the cursor leaves: card drifts back to center naturally.
-  // 6. Tilt responds to velocity for a living, breathing object feel.
+  // Phase 1 (streak 0-4): Card repels from cursor like "can't catch me!"
+  //   → Cursor gets close, card pushes away playfully
+  // Phase 2 (streak 5-7): Card drifts toward cursor — "okay fine..."
+  //   → Gentle magnetic pull, 3 approaches, builds trust
+  // Phase 3 (caught):      Card returns to center, button activates
+  //   → User can finally click Connect Wallet
+  //
+  // Damping 0.965 + overshoot = fluid rubber-band feel
+  // Two overlapping sine waves for organic idle breathing
   useEffect(() => {
     let running = true;
     const animate = () => {
       if (!running) return;
       floatTime.current += 0.016;
 
-      // Organic idle float — two overlapping sine waves for natural feel
+      // Organic idle float
       const floatX =
         Math.sin(floatTime.current * 0.4) * 1.8 + Math.sin(floatTime.current * 0.12) * 1.2;
       const floatY =
@@ -217,31 +235,33 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       const dy = my - cardY;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const mouseActive = mx > -1000;
+      const streak = hoverStreakRef.current;
 
-      if (caught && attractedRef.current) {
-        // Caught — pull toward center
-        velRef.current.x += (CENTER.x - cardX) * 0.008;
-        velRef.current.y += (CENTER.y - cardY) * 0.008;
+      if (caught) {
+        // ── Phase 3: Caught! Return to center smoothly ──
+        velRef.current.x += (CENTER.x - cardX) * 0.01;
+        velRef.current.y += (CENTER.y - cardY) * 0.01;
       } else if (mouseActive) {
-        if (dist > 5) {
-          // ── "5 away" — gentle chase ──
-          // Soft magnetic pull toward cursor, stronger when farther
-          const pullStrength = Math.min(dist * 0.0025, 0.08);
-          velRef.current.x += (dx / (dist || 1)) * pullStrength;
-          velRef.current.y += (dy / (dist || 1)) * pullStrength * 0.7;
-        } else if (dist < 3) {
-          // ── "3 toward" — brief follow, then boomerang ──
-          // Quick follow toward cursor
-          const followStrength = 0.06 * (1 - dist / 3);
-          velRef.current.x += (dx / (dist || 1)) * followStrength;
-          velRef.current.y += (dy / (dist || 1)) * followStrength * 0.6;
-          // Also start pulling back to center (boomerang)
-          velRef.current.x += (CENTER.x - cardX) * 0.003;
-          velRef.current.y += (CENTER.y - cardY) * 0.003;
+        if (streak < 5) {
+          // ── Phase 1: "Can't catch me!" — repel ──
+          // Card pushes away from cursor when close
+          if (dist < 28 && dist > 0.5) {
+            const repel = ((28 - dist) / 28) * 0.15;
+            velRef.current.x += -(dx / dist) * repel;
+            velRef.current.y += -(dy / dist) * repel * 0.6;
+          }
+          // Gentle center pull when far
+          velRef.current.x += (CENTER.x - cardX) * 0.0012;
+          velRef.current.y += (CENTER.y - cardY) * 0.0012;
         } else {
-          // Between 3 and 5 — neutral zone, gentle center pull
-          velRef.current.x += (CENTER.x - cardX) * 0.002;
-          velRef.current.y += (CENTER.y - cardY) * 0.002;
+          // ── Phase 2: "Okay fine..." — approach ──
+          // Card gently drifts toward cursor
+          const pull = Math.min(dist * 0.0035, 0.12);
+          velRef.current.x += (dx / (dist || 1)) * pull;
+          velRef.current.y += (dy / (dist || 1)) * pull * 0.7;
+          // Also slight center pull (so it doesn't stick to cursor)
+          velRef.current.x += (CENTER.x - cardX) * 0.0015;
+          velRef.current.y += (CENTER.y - cardY) * 0.0015;
         }
       } else {
         // No mouse — drift back to center
@@ -249,11 +269,10 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         velRef.current.y += (CENTER.y - cardY) * 0.003;
       }
 
-      // Low damping = fluid, floaty, rubber-band feel
+      // Low damping = fluid, floaty overshoot
       velRef.current.x *= 0.965;
       velRef.current.y *= 0.965;
 
-      // Apply velocity + organic float (subtle)
       let newX = cardX + velRef.current.x + floatX * 0.004;
       let newY = cardY + velRef.current.y + floatY * 0.004;
       newX = Math.max(BOUNDS.xMin, Math.min(BOUNDS.xMax, newX));
@@ -262,7 +281,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setCardX(newX);
       setCardY(newY);
 
-      // Tilt — responsive to velocity, like the card is alive
+      // Tilt — alive, responsive
       setTilt((prev) => ({
         rx:
           prev.rx +
@@ -272,6 +291,30 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           (Math.max(-14, Math.min(14, velRef.current.x * 0.6)) - prev.ry) * 0.06,
       }));
 
+      // Compute card pixel pos for rocket orientation
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setCardPixel({
+          x: (cardX / 100) * rect.width - 150 + 140,
+          y: (cardY / 100) * rect.height - 110 + 105,
+        });
+      }
+
+      // Rocket tilt toward card (blended with velocity)
+      if (mouseOnScreen) {
+        const cp = cardPixel;
+        const dxToCard = cp.x - cursorPos.x;
+        const dyToCard = cp.y - cursorPos.y;
+        if (Math.abs(dxToCard) > 5 || Math.abs(dyToCard) > 5) {
+          const angleToCard = Math.atan2(dyToCard, dxToCard) * (180 / Math.PI);
+          // Blend: 40% face-card + 60% velocity-based
+          const velTilt = -mouseVelRef.current.x * 0.3;
+          const blended = angleToCard * 0.4 + velTilt * 0.6;
+          const clamped = Math.max(-30, Math.min(30, blended));
+          setRocketTilt((prev) => prev + (clamped - prev) * 0.12);
+        }
+      }
+
       // Drift fumes
       setFumes((prev) =>
         prev
@@ -279,7 +322,6 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           .filter((f) => f.opacity > 0.01),
       );
 
-      // Ticker count-up
       if (connecting) {
         setTickerValue((prev) =>
           prev < 12847 ? Math.min(prev + Math.floor((12847 - prev) / 40) + 1, 12847) : prev,
@@ -293,7 +335,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [cardX, cardY, caught, connecting]);
+  }, [cardX, cardY, caught, connecting, mouseOnScreen, cursorPos.x, cursorPos.y, cardPixel.x, cardPixel.y]);
 
   // ───── Connect handler ───────────────────────────────────────────────
   const handleConnect = useCallback(() => {
