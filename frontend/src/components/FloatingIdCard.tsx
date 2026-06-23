@@ -7,11 +7,11 @@ interface Props {
   onConnect: () => void;
 }
 
-const HOVER_THRESHOLD = 8;
+const HOVER_THRESHOLD = 4;
 const BOUNDS = { xMin: 15, xMax: 85, yMin: 15, yMax: 80 };
 const CENTER = { x: 50, y: 42 };
-const REPEL_STRENGTH = 0.22; // How hard the card dodges cursor
-const APPROACH_SPEED = 0.005; // How eagerly it returns
+const REPEL_STRENGTH = 0.25; // How hard the card dodges cursor
+const APPROACH_SPEED = 0.006; // How eagerly it returns
 
 /**
  * Floating VERIDD Identity Card — superhero physics, 8-hover mechanic,
@@ -58,6 +58,12 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     Array<{ id: number; x: number; y: number; size: number; opacity: number }>
   >([]);
   const [mousePct, setMousePct] = useState({ x: 50, y: 50 });
+  const isMobileRef = useRef(false);
+
+  // Detect mobile on mount
+  useEffect(() => {
+    isMobileRef.current = window.innerWidth < 768 || 'ontouchstart' in window;
+  }, []);
 
   // ───── Space objects (stable across renders) ─────────────────────────
   const spaceObjects = useMemo(() => {
@@ -120,13 +126,13 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     }, 30);
   }, []);
 
-  // ───── Mouse handlers ────────────────────────────────────────────────
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  // ───── Mouse/touch handlers ──────────────────────────────────────────
+  const handlePointerMove = useCallback(
+    (clientX: number, clientY: number) => {
       if (!containerRef.current || connecting) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const px = e.clientX - rect.left;
-      const py = e.clientY - rect.top;
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
       const mx = (px / rect.width) * 100;
       const my = (py / rect.height) * 100;
 
@@ -137,24 +143,25 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       setMouseOnScreen(true);
       setMousePct({ x: mx, y: my });
 
-      const targetTilt = Math.max(-25, Math.min(25, -mouseVelRef.current.x * 0.3));
-      setRocketTilt((prev) => prev + (targetTilt - prev) * 0.15);
-
-      // Throttled fumes
+      // Throttled fumes — limit to 8, disabled on mobile
       const nowMs = Date.now();
-      if (nowMs - lastFumeTime.current > 40) {
+      const fumeInterval = isMobileRef.current ? 99999 : 70;
+      if (nowMs - lastFumeTime.current > fumeInterval) {
         lastFumeTime.current = nowMs;
         const id = fumeIdRef.current++;
-        setFumes((prev) => [
-          ...prev,
-          {
-            id,
-            x: px + (Math.random() - 0.5) * 4,
-            y: py + 6 + Math.random() * 4,
-            size: 4 + Math.random() * 6,
-            opacity: 0.55,
-          },
-        ]);
+        setFumes((prev) => {
+          if (prev.length >= 8) return prev;
+          return [
+            ...prev,
+            {
+              id,
+              x: px + (Math.random() - 0.5) * 4,
+              y: py + 6 + Math.random() * 4,
+              size: 4 + Math.random() * 6,
+              opacity: 0.55,
+            },
+          ];
+        });
         setTimeout(() => setFumes((prev) => prev.filter((f) => f.id !== id)), 1000);
       }
 
@@ -163,21 +170,16 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       // Hover detection
       const now = Date.now();
       const dist = Math.sqrt((mx - cardX) ** 2 + (my - cardY) ** 2);
-      // ── Playful chase sequence ──
-      // Phase 1 (streak 0-4): Card runs away — "can't catch me!"
-      // Phase 2 (streak 5-7): Card drifts toward cursor — "okay fine..."
-      // Phase 3 (streak 8):   Caught! Returns to center, button blinks
-      if (!caught && dist < 28 && now - lastHoverTime.current > 700) {
+      if (!caught && dist < 28 && now - lastHoverTime.current > 600) {
         const n = Math.min(hoverStreakRef.current + 1, HOVER_THRESHOLD);
         hoverStreakRef.current = n;
         lastHoverTime.current = now;
 
         if (n >= HOVER_THRESHOLD) {
-          // Phase 3: Caught! Back to center, connect button activates
           setCaught(true);
           attractedRef.current = true;
           setBtnBlink(true);
-        } else if (n >= 5) {
+        } else if (n >= 2) {
           // Phase 2: Card starts trusting — drifts toward cursor
           attractedRef.current = true;
           setBtnBlink(true);
@@ -192,6 +194,26 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   );
 
   const handleMouseLeave = useCallback(() => {
+    if (caught) return;
+    mouseRef.current = { x: -9999, y: -9999 };
+    setMouseOnScreen(false);
+  }, [caught]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => handlePointerMove(e.clientX, e.clientY),
+    [handlePointerMove],
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    },
+    [handlePointerMove],
+  );
+
+  const handleTouchEnd = useCallback(() => {
     if (caught) return;
     mouseRef.current = { x: -9999, y: -9999 };
     setMouseOnScreen(false);
@@ -286,22 +308,23 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       }));
 
       // ── Rocket ALWAYS faces card (like orbiting a planet) ──
-      // The nose of the rocket continuously points toward the card's
-      // center, regardless of where the cursor is. As the cursor moves
-      // around the card, the rocket rotates to always "look at" it —
-      // exactly like a spaceship orbiting a planet keeps its nose
-      // pointed at the planet's center.
+      // The SVG rocket faces UP (0°). atan2 gives 0° = RIGHT.
+      // So we add 90°: right → 90°, up → 0°, down → 180°, left → 270°.
+      // No clamp = full 360° orbit. Smooth shortest-path interpolation.
       if (mouseOnScreen && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const cardPx = (cardX / 100) * rect.width;
         const cardPy = (cardY / 100) * rect.height;
         const dxToCard = cardPx - cursorPos.x;
         const dyToCard = cardPy - cursorPos.y;
-        if (Math.abs(dxToCard) > 1 || Math.abs(dyToCard) > 1) {
-          // Pure angle toward card — no velocity blend
-          const targetAngle = Math.atan2(dyToCard, dxToCard) * (180 / Math.PI);
-          const clamped = Math.max(-40, Math.min(40, targetAngle));
-          setRocketTilt((prev) => prev + (clamped - prev) * 0.08);
+        if (Math.abs(dxToCard) > 2 || Math.abs(dyToCard) > 2) {
+          const targetAngle =
+            Math.atan2(dyToCard, dxToCard) * (180 / Math.PI) + 90;
+          setRocketTilt((prev) => {
+            // Shortest angular distance (handles 360° wrapping)
+            const diff = ((targetAngle - prev + 540) % 360) - 180;
+            return prev + diff * 0.08;
+          });
         }
       }
 
@@ -349,8 +372,10 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       className="relative w-full h-screen overflow-hidden select-none"
-      style={{ cursor: 'none' }}
+      style={{ cursor: 'none', touchAction: 'none' }}
     >
       <RocketCursor
         x={cursorPos.x}
@@ -394,6 +419,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           top: `calc(${cardY}% - 110px)`,
           transform: `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
           transition: 'transform 0.05s ease-out',
+          willChange: 'transform',
         }}
       >
         {/* Medal loop */}
