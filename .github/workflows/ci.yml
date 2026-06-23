@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'contracts/package-lock.json'
+      - run: npm ci
+      - run: npx hardhat compile
+
+  commitlint:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for potential secrets
+        run: |
+          if grep -rE '(API[_-]?KEY|SECRET|PASSWORD|TOKEN|sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{36})' \
+            --include='*.{js,ts,py,sol,sh,env,yml,yaml,json,md,config}' \
+            --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=artifacts --exclude-dir=cache .; then
+            echo "❌ Potential secrets detected in code!"
+            exit 1
+          fi
+          echo "✅ No secrets found"

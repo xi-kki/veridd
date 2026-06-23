@@ -1,4 +1,6 @@
 #!/bin/sh
+
+# ── Branch naming ──
 BRANCH_NAME=$(git symbolic-ref HEAD 2>/dev/null | cut -d'/' -f3-)
 if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "main" ] && [ "$BRANCH_NAME" != "develop" ]; then
   if ! echo "$BRANCH_NAME" | grep -qE '^(feature|fix|hotfix|chore|docs|refactor)/[a-z0-9-]+$'; then
@@ -7,3 +9,13 @@ if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "main" ] && [ "$BRANCH_NAME" != 
     exit 1
   fi
 fi
+
+# ── Run tests before push ──
+echo "⏳ Running tests..."
+npm test || { echo "❌ Tests failed — push aborted"; exit 1; }
+
+# ── Build check ──
+echo "⏳ Checking build..."
+npm run build --if-present || { echo "❌ Build failed — push aborted"; exit 1; }
+
+echo "✅ All checks passed"
