@@ -287,7 +287,10 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
               {review.flags?.length ? (
                 <div className="bg-amber-900/15 border border-amber-700/25 rounded-lg p-3">
                   <p className="text-[10px] text-amber-400 font-medium uppercase tracking-wider mb-1">
-                    ⚠️ Flags
+                    <svg className="w-3.5 h-3.5 text-amber-400 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Flags
                   </p>
                   {review.flags.map((f, i) => (
                     <p key={i} className="text-xs text-amber-300">

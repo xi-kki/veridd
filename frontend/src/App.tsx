@@ -164,7 +164,9 @@ function App() {
         {error && (
           <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
             <div className="bg-red-900/15 border border-red-700/25 rounded-lg p-3.5 flex items-center gap-2">
-              <span className="text-red-400 text-sm">⚠️</span>
+              <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               <p className="text-xs text-red-400">{error}</p>
               <button
                 onClick={() => setError('')}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { VeriddChain } from '../lib/chain';
 import { VeriddStorage } from '../lib/storage';
-import { generateAgentAvatar } from '../lib/avatar';
+import { generatePixelAvatar } from '../lib/pixel-avatar';
 
 interface Props {
   chain: VeriddChain;
@@ -27,7 +27,7 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
   const [error, setError] = useState('');
   const submitting = useRef(false);
   const avatarPreview = useMemo(
-    () => (name.trim() ? generateAgentAvatar(Date.now() % 10000, name.trim(), 48) : null),
+    () => (name.trim() ? generatePixelAvatar(Date.now() % 10000, name.trim(), 48) : null),
     [name],
   );
 
@@ -48,17 +48,19 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
       let profileRoot = 'veridd://profiles/default';
       try {
         const storage = new VeriddStorage();
-        profileRoot = await storage.storeAgentProfile({
+        const profileResult = await storage.storeAgentProfile({
           name: name.trim(),
           description: desc.trim(),
           capabilities: caps
             .split(',')
             .map((c) => c.trim())
             .filter(Boolean),
+          riskTolerance: 3,
           owner: chain.address || '',
+          agentAddress: chain.address || '',
           createdAt: Date.now(),
         });
-        profileRoot = `veridd://profiles/${profileRoot}`;
+        profileRoot = `veridd://profiles/${profileResult.root}`;
       } catch (storageErr) {
         console.warn('Storage upload failed, using default URI:', storageErr);
       }
@@ -142,14 +144,17 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
 
           {/* 0G Product Tags */}
           <div className="flex flex-wrap gap-2">
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
-              0G Chain ✓
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium inline-flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
+              0G Chain
             </span>
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-              0G Storage ✓
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium inline-flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
+              0G Storage
             </span>
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">
-              Agentic ID ✓
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium inline-flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
+              Agentic ID
             </span>
           </div>
 

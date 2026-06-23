@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { VeriddBadge } from './VeriddBadge';
+import { generatePixelAvatar } from '../lib/pixel-avatar';
 
 interface AgentCardProps {
   agentId: number;
@@ -28,8 +29,13 @@ export const AgentCard: React.FC<AgentCardProps> = ({
       duration-300 hover:shadow-lg hover:shadow-violet-500/10 group animate-slide-up"
     >
       <div className="flex items-start gap-4">
-        {/* Veridd Badge */}
-        <div className="flex-shrink-0">
+        {/* Pixel Avatar */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-2">
+          <img
+            src={generatePixelAvatar(agentId, name, 48)}
+            alt={`${name} avatar`}
+            className="w-10 h-10 rounded-lg bg-gray-800/50 ring-1 ring-violet-500/20"
+          />
           <VeriddBadge score={veriddScore.average} totalReviews={veriddScore.total} size="sm" />
         </div>
 

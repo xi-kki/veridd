@@ -49,15 +49,15 @@ const MESSAGES = [
   '> STANDING BY // AWAITING AGENT ACTIVITY...',
 ];
 
-const TYPING_SPEED = 18; // ms per character
-const PAUSE_BETWEEN = 600; // ms pause between messages
-const LINE_HEIGHT = 18; // approximate px per line
+const TYPING_SPEED = 35; // ms per character (slower, readable)
+const PAUSE_BETWEEN = 2000; // ms pause between messages (lets each line breathe)
+const LINE_HEIGHT = 16; // approximate px per line
 
 export const MissionTerminal: React.FC = () => {
   const [typedText, setTypedText] = useState('');
   const [currentLine, setCurrentLine] = useState('');
   const [showCursor, setShowCursor] = useState(true);
-  const [maxLines, setMaxLines] = useState(8);
+  const [maxLines, setMaxLines] = useState(2);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Blinking cursor
@@ -68,7 +68,7 @@ export const MissionTerminal: React.FC = () => {
 
   // ───── Edge case guards ──────────────────────────────────────────────
   const MESSAGES_SAFE = MESSAGES.length > 0 ? MESSAGES : ['> TERMINAL INITIALIZED // AWAITING DATA...'];
-  const MAX_LINES_FALLBACK = 8;
+  const MAX_LINES_FALLBACK = 2;
 
   // Measure available height and calculate max lines
   useEffect(() => {
@@ -149,7 +149,7 @@ export const MissionTerminal: React.FC = () => {
   }, [MESSAGES_SAFE.length]);
 
   return (
-    <div className="absolute bottom-[120px] left-1/2 -translate-x-1/2 w-full max-w-[740px] px-4 pointer-events-none">
+    <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 w-full max-w-[460px] px-4 z-20 pointer-events-none">
       <div
         ref={containerRef}
         className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15"
@@ -167,22 +167,20 @@ export const MissionTerminal: React.FC = () => {
         />
 
         {/* Top bar */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-emerald-500/10">
-          <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
-          <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
-          <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
-          <span className="text-[9px] text-emerald-500/40 font-mono ml-1 tracking-widest uppercase">
+        <div className="flex items-center gap-1 px-2.5 py-0.5 border-b border-emerald-500/10">
+          <div className="w-1 h-1 rounded-full bg-emerald-500/40" />
+          <span className="text-[7px] text-emerald-500/40 font-mono tracking-widest uppercase">
             veridd://mission-control
           </span>
         </div>
 
         {/* Terminal content — grows to fill space */}
         <div
-          className="px-3 py-2.5 font-mono overflow-hidden"
-          style={{ minHeight: `${maxLines * LINE_HEIGHT + 8}px`, maxHeight: `${maxLines * LINE_HEIGHT + 16}px` }}
+          className="px-2.5 py-1 font-mono overflow-hidden"
+          style={{ minHeight: `${maxLines * LINE_HEIGHT + 2}px`, maxHeight: `${maxLines * LINE_HEIGHT + 6}px` }}
         >
           <span
-            className="text-xs leading-relaxed whitespace-pre-wrap break-all"
+            className="text-[10px] leading-[16px] whitespace-pre-wrap break-all"
             style={{
               color: '#34d399',
               textShadow: '0 0 6px rgba(52, 211, 153, 0.3)',
