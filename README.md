@@ -3,7 +3,7 @@
   <img alt="VERIDD Banner" src="https://files.catbox.moe/k3npqm.jpg" width="100%">
 </picture>
 
-# 🛡️ VERIDD — Onchain Reputation for AI Agents
+# VERIDD — Onchain Reputation for AI Agents
 
 > **Zero Cup 2026 — Global Vibe Coding Tournament**
 >
@@ -30,20 +30,20 @@
 
 ---
 
-## 📋 Quick Access for Judges
+## Quick Access for Judges
 
-| Resource                   | Link                                                                                                                               |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 🌐 **Live Demo**           | [veridd.vercel.app](https://veridd.vercel.app)                                                                                   |
-| 📄 **Contract (Verified)** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
-| 🖼️ **Screenshot**          | [View](https://files.catbox.moe/tflwui.PNG)                                                                                        |
-| 🎥 **Demo Video**          | _(coming soon)_                                                                                                                    |
-| 📦 **Source Code**         | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd)                                                                       |
-| ⛓️ **Network**             | 0G Galileo Testnet (Chain ID: 16602)                                                                                               |
+| Resource | Link |
+|----------|------|
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/globe.svg" width="16" height="16" align="center" /> **Live Demo** | [veridd.vercel.app](https://veridd.vercel.app) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/file-text.svg" width="16" height="16" align="center" /> **Contract (Verified)** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/image.svg" width="16" height="16" align="center" /> **Screenshot** | [View](https://files.catbox.moe/tflwui.PNG) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/video.svg" width="16" height="16" align="center" /> **Demo Video** | _(coming soon)_ |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/folder-git-2.svg" width="16" height="16" align="center" /> **Source Code** | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/link.svg" width="16" height="16" align="center" /> **Network** | 0G Galileo Testnet (Chain ID: 16602) |
 
 ---
 
-## 🎯 One-Line Pitch
+## One-Line Pitch
 
 **VERIDD = reputation score for AI agents. Immutable. Onchain. Powered by 0G.**
 
@@ -51,34 +51,34 @@ Every AI agent earns a verifiable reputation through real work — not marketing
 
 ---
 
-## ❓ The Problem
+## The Problem
 
 AI agents are taking over DeFi, trading, analytics, auditing, and automation. But there's **zero way to know if an agent is trustworthy** before handing it access, data, or money.
 
 Existing reputation systems fail on every front:
 
-- ❌ **Centralized** — One company owns your data. They can change the rules.
-- ❌ **Opaque** — Claims without proof. Marketing, not merit.
-- ❌ **Siloed** — Reputation doesn't travel. Start from zero on every platform.
+- <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/x-circle.svg" width="16" height="16" align="center" /> **Centralized** — One company owns your data. They can change the rules.
+- <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/x-circle.svg" width="16" height="16" align="center" /> **Opaque** — Claims without proof. Marketing, not merit.
+- <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/x-circle.svg" width="16" height="16" align="center" /> **Siloed** — Reputation doesn't travel. Start from zero on every platform.
 
 **This is a billion-dollar blindspot.** As AI agents manage more value every day, trust is the bottleneck holding everything back.
 
 ---
 
-## ✅ The Solution
+## The Solution
 
 VERIDD issues every AI agent an **immutable, verifiable, onchain reputation score** — built exclusively on 0G's decentralized infrastructure:
 
-| 0G Product        | What VERIDD Uses It For                                                      |
-| ----------------- | ---------------------------------------------------------------------------- |
-| **🧬 0G Chain**   | Agentic ID (ERC-721) minting + immutable reputation state on Galileo testnet |
-| **💾 0G Storage** | Action logs + peer review reasoning with Merkle tree cryptographic proofs    |
-| **🧠 0G Compute** | Decentralized peer review AI agents that analyze and score actions           |
-| **🆔 Agentic ID** | Portable onchain identity for every registered agent via ERC-7857 standard   |
+| 0G Product | What VERIDD Uses It For |
+|------------|------------------------|
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/dna.svg" width="16" height="16" align="center" /> **0G Chain** | Agentic ID (ERC-721) minting + immutable reputation state on Galileo testnet |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/hard-drive.svg" width="16" height="16" align="center" /> **0G Storage** | Action logs + peer review reasoning with Merkle tree cryptographic proofs |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/brain.svg" width="16" height="16" align="center" /> **0G Compute** | Decentralized peer review AI agents that analyze and score actions |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/id-card.svg" width="16" height="16" align="center" /> **Agentic ID** | Portable onchain identity for every registered agent via ERC-7857 standard |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
                          ┌─────────────────────────────────────┐
@@ -103,31 +103,31 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
                               ┌────────────────────┐
                               │  VERIDD Score =    │
                               │  Onchain Trust     │
-                              │  Rating (1-5 ⭐)   │
+                              │  Rating (1-5 ★)    │
                               └────────────────────┘
 ```
 
 ### Data Flow
 
 ```
-1️⃣ Register Agent
+1 → Register Agent
    → Agentic ID (ERC-721) minted on 0G Chain
    → Agent gets a unique, portable identity
 
-2️⃣ Agent Performs Action
+2 → Agent Performs Action
    → Action data stored on 0G Storage
    → Merkle root committed on-chain
 
-3️⃣ Peer Review
+3 → Peer Review
    → 0G Compute agent analyzes the action
    → Scores 1-5 with on-chain reasoning
 
-4️⃣ Reputation Update
+4 → Reputation Update
    → Score written to 0G Chain
    → Running average recalculated
    → Full review data on 0G Storage
 
-5️⃣ Verify Anyone
+5 → Verify Anyone
    → Query any agent's VERIDD score
    → Verify individual actions via Merkle proof
    → No blind trust required
@@ -135,50 +135,51 @@ VERIDD issues every AI agent an **immutable, verifiable, onchain reputation scor
 
 ---
 
-## 📊 VERIDD Score Tiers
+## VERIDD Score Tiers
 
-| Score Range | Tier            | Badge      | Meaning                          |
-| ----------- | --------------- | ---------- | -------------------------------- |
-| 4.5 – 5.0   | 🏆 **Elite**    | ⭐⭐⭐⭐⭐ | Exceptional, beyond expectations |
-| 4.0 – 4.4   | ✅ **Trusted**  | ⭐⭐⭐⭐   | Reliable, above average          |
-| 3.0 – 3.9   | 📊 **Reliable** | ⭐⭐⭐     | Met expectations                 |
-| 2.0 – 2.9   | ⚠️ **Caution**  | ⭐⭐       | Below average                    |
-| 1.0 – 1.9   | 🚫 **Risky**    | ⭐         | Poor track record                |
+| Score Range | Tier | Badge | Meaning |
+|------------|------|-------|---------|
+| 4.5 – 5.0 | **Elite** | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="14" height="14" align="center" /> ★★★★★ | Exceptional, beyond expectations |
+| 4.0 – 4.4 | **Trusted** | ★★★★ | Reliable, above average |
+| 3.0 – 3.9 | **Reliable** | ★★★ | Met expectations |
+| 2.0 – 2.9 | **Caution** | ★★ | Below average |
+| 1.0 – 1.9 | **Risky** | ★ | Poor track record |
 
 ---
 
-## 🎮 UI Features (Judge Please Try)
+## UI Features (Judge Please Try)
 
-| Feature                    | Details                                                                                                        |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| 🏅 **Floating Medal Card** | Physics-driven superhero tilt on the 0G logo. Card hangs from circular medal ribbon. Cape tail cascades below. |
-| 🚀 **Rocket Cursor**       | Purple rocket with white outline, tilts with movement, emits exhaust fumes as you move                         |
-| 🎯 **3-Hover Mechanic**    | Card dodges twice, on 3rd reach it surrenders — connect button pulses                                          |
-| 🎉 **Celebration Burst**   | 60-particle burst on connect click, trust ticker counts to 12,847 agents                                       |
-| 📟 **Mission Terminal**    | Thin green terminal strip, 2-line typing animation, explains VERIDD flow step-by-step                          |
-| 🌌 **Space Scene**         | Asteroids, ringed planets, comets drifting in the background                                                   |
+| Feature | Details |
+|---------|---------|
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/medal.svg" width="16" height="16" align="center" /> **Floating Medal Card** | Physics-driven superhero tilt on the 0G logo. Card hangs from circular medal ribbon. Cape tail cascades below. |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/rocket.svg" width="16" height="16" align="center" /> **Rocket Cursor** | Purple rocket with white outline, tilts with movement, emits exhaust fumes as you move |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/crosshair.svg" width="16" height="16" align="center" /> **3-Hover Mechanic** | Card dodges twice, on 3rd reach it surrenders — connect button pulses |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/sparkles.svg" width="16" height="16" align="center" /> **Celebration Burst** | 60-particle burst on connect click, trust ticker counts to 12,847 agents |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/terminal.svg" width="16" height="16" align="center" /> **Mission Terminal** | Thin green terminal strip, 2-line typing animation, explains VERIDD flow step-by-step |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/stars.svg" width="16" height="16" align="center" /> **Space Scene** | Asteroids, ringed planets, comets drifting in the background |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/image.svg" width="16" height="16" align="center" /> **Pixel Avatars** | Unique 8-bit pixel art DPs for every AI agent, generated deterministically from agent ID |
 
 👉 **Try it:** https://veridd.vercel.app
 
 ---
 
-## 🧱 Tech Stack
+## Tech Stack
 
-| Component            | Technology                                                                                                                         |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Smart Contracts**  | Solidity ^0.8.20, OpenZeppelin, Hardhat                                                                                            |
-| **Network**          | 0G Galileo Testnet (Chain ID: 16602)                                                                                               |
+| Component | Technology |
+|-----------|------------|
+| **Smart Contracts** | Solidity ^0.8.20, OpenZeppelin, Hardhat |
+| **Network** | 0G Galileo Testnet (Chain ID: 16602) |
 | **Contract Address** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
-| **Storage SDK**      | @0gfoundation/0g-storage-ts-sdk (Merkle proofs)                                                                                    |
-| **Compute SDK**      | @0gfoundation/0g-compute-ts-sdk (peer review agents)                                                                               |
-| **Identity**         | Agentic ID (ERC-7857) via VeriddReputation contract                                                                                |
-| **Frontend**         | React 18 + Vite + TypeScript + Tailwind CSS                                                                                        |
-| **Wallet**           | ethers.js v6 + MetaMask / OKX Wallet                                                                                               |
-| **Deployment**       | Netlify (CI/CD from GitHub)                                                                                                        |
+| **Storage SDK** | @0gfoundation/0g-storage-ts-sdk (Merkle proofs) |
+| **Compute SDK** | @0gfoundation/0g-compute-ts-sdk (peer review agents) |
+| **Identity** | Agentic ID (ERC-7857) via VeriddReputation contract |
+| **Frontend** | React 18 + Vite + TypeScript + Tailwind CSS |
+| **Wallet** | ethers.js v6 + MetaMask / OKX Wallet |
+| **Deployment** | Vercel (CI/CD from GitHub) |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -211,18 +212,18 @@ Open **http://localhost:5173** and connect your wallet.
 
 ---
 
-## 🔗 Smart Contract
+## Smart Contract
 
 **VeriddReputation** — ERC-721 with reputation scoring.
 
-| Detail       | Value                                                                                                                              |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**     | Veridd Reputation                                                                                                                  |
-| **Symbol**   | VERIDD                                                                                                                             |
-| **Network**  | 0G Galileo Testnet                                                                                                                 |
-| **Chain ID** | 16602                                                                                                                              |
-| **Address**  | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
-| **Standard** | ERC-721 (Agentic ID compatible)                                                                                                    |
+| Detail | Value |
+|--------|-------|
+| **Name** | Veridd Reputation |
+| **Symbol** | VERIDD |
+| **Network** | 0G Galileo Testnet |
+| **Chain ID** | 16602 |
+| **Address** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
+| **Standard** | ERC-721 (Agentic ID compatible) |
 
 ### Core Functions
 
@@ -239,21 +240,21 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 
 ---
 
-## 📝 Submission Checklist
+## Submission Checklist
 
-- [x] ✅ Smart contract written (VeriddReputation.sol)
-- [x] ✅ Contract deployed to 0G Galileo Testnet
-- [x] ✅ 4 0G products used (Chain, Storage, Compute, Agentic ID)
-- [x] ✅ Live frontend at [veridd.vercel.app](https://veridd.vercel.app)
-- [ ] 🎥 **Demo video** — record 2-min walkthrough, upload to YouTube/Drive, add link below
+- [x] Smart contract written (VeriddReputation.sol)
+- [x] Contract deployed to 0G Galileo Testnet
+- [x] 4 0G products used (Chain, Storage, Compute, Agentic ID)
+- [x] Live frontend at [veridd.vercel.app](https://veridd.vercel.app)
+- [ ] **Demo video** — record 2-min walkthrough, upload to YouTube/Drive, add link below
       → _Link: (coming soon)_
-- [x] 📦 Public GitHub repo
-- [x] 🖼️ Screenshots submitted
-- [x] 📜 Open source (MIT License)
+- [x] Public GitHub repo
+- [x] Screenshots submitted
+- [x] Open source (MIT License)
 
 ---
 
-## 🤖 Autonomous Bot
+## Autonomous Bot
 
 VERIDD includes a headless Node.js bot (`runner/agent-bot.js`) that runs the full autonomous loop:
 
@@ -274,34 +275,34 @@ The bot:
 
 ---
 
-## 👤 Team
+## Team
 
-|                    |                                                      |
-| ------------------ | ---------------------------------------------------- |
-| **Isaac Adeleke**  | Builder, Product Designer                            |
-| 🐦 **X / Twitter** | [@vytalique](https://x.com/vytalique)                |
-| 💼 **LinkedIn**    | [adelekeisaac](https://linkedin.com/in/adelekeisaac) |
-| 🏆 **Past**        | Design bounty winner — Quizfinity (ICP blockchain)   |
+| | |
+|---|---|
+| **Isaac Adeleke** | Builder, Product Designer |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/twitter.svg" width="16" height="16" align="center" /> **X / Twitter** | [@vytalique](https://x.com/vytalique) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/briefcase.svg" width="16" height="16" align="center" /> **LinkedIn** | [adelekeisaac](https://linkedin.com/in/adelekeisaac) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/trophy.svg" width="16" height="16" align="center" /> **Past** | Design bounty winner — Quizfinity (ICP blockchain) |
 
 ---
 
-## 📚 Resources
+## Resources
 
-| Resource              | Link                                                                                               |
-| --------------------- | -------------------------------------------------------------------------------------------------- |
-| 0G Documentation      | [docs.0g.ai](https://docs.0g.ai)                                                                   |
-| 0G Galileo Explorer   | [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai)                                         |
-| 0G Faucet             | [faucet.0g.ai](https://faucet.0g.ai)                                                               |
-| Agentic ID (ERC-7857) | [0g.ai/agentic-id](https://0g.ai)                                                                  |
-| Zero Cup              | [0g.ai/arena/zero-cup](https://0g.ai/arena/zero-cup)                                               |
-| Our Contract          | [`0x2F00a1...`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
+| Resource | Link |
+|----------|------|
+| 0G Documentation | [docs.0g.ai](https://docs.0g.ai) |
+| 0G Galileo Explorer | [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai) |
+| 0G Faucet | [faucet.0g.ai](https://faucet.0g.ai) |
+| Agentic ID (ERC-7857) | [0g.ai/agentic-id](https://0g.ai) |
+| Zero Cup | [0g.ai/arena/zero-cup](https://0g.ai/arena/zero-cup) |
+| Our Contract | [`0x2F00a1...`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 
 ---
 
 <p align="center">
   <i>Built during the 0G Zero Cup 2026 — Global Vibe Coding Tournament</i>
   <br>
-  <a href="https://veridd.vercel.app">🌐 Live Demo</a> ·
-  <a href="https://github.com/xi-kki/veridd">📦 Source</a> ·
-  <a href="https://x.com/vytalique">🐦 @vytalique</a>
+  <a href="https://veridd.vercel.app">Live Demo</a> ·
+  <a href="https://github.com/xi-kki/veridd">Source</a> ·
+  <a href="https://x.com/vytalique">@vytalique</a>
 </p>
