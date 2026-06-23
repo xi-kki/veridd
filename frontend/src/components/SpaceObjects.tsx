@@ -52,15 +52,13 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => (
 
     {/* Space objects */}
     {objects.map((obj, i) => {
-      const driftX = obj.type === 'comet'
-        ? time * obj.speed * 30
-        : Math.sin(time * obj.speed + i) * 5;
+      const driftX =
+        obj.type === 'comet' ? time * obj.speed * 30 : Math.sin(time * obj.speed + i) * 5;
       const driftY = Math.cos(time * obj.speed * 0.7 + i) * 3;
       const x = obj.x + driftX;
       const y = obj.y + driftY;
-      const opacity = 0.15 + (obj.type === 'comet'
-        ? Math.sin(time * obj.speed * 2 + i) * 0.1 + 0.15
-        : 0.08);
+      const opacity =
+        0.15 + (obj.type === 'comet' ? Math.sin(time * obj.speed * 2 + i) * 0.1 + 0.15 : 0.08);
 
       return (
         <div
@@ -78,9 +76,14 @@ export const SpaceObjects: React.FC<Props> = React.memo(({ objects, time }) => (
               <circle cx="10" cy="10" r={obj.size * 1.5} fill={obj.color} opacity="0.6" />
               {obj.ringSize && (
                 <ellipse
-                  cx="10" cy="10"
-                  rx={obj.ringSize * 2} ry={obj.ringSize * 0.6}
-                  fill="none" stroke={obj.color} strokeWidth="0.5" opacity="0.4"
+                  cx="10"
+                  cy="10"
+                  rx={obj.ringSize * 2}
+                  ry={obj.ringSize * 0.6}
+                  fill="none"
+                  stroke={obj.color}
+                  strokeWidth="0.5"
+                  opacity="0.4"
                   transform={`rotate(${obj.angle}, 10, 10)`}
                 />
               )}

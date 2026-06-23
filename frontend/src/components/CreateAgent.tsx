@@ -11,7 +11,7 @@ interface Props {
 
 /**
  * Create Agent Modal — mints an Agentic ID on 0G Chain
- * 
+ *
  * Edge cases handled:
  *   - Double-submit prevention (submitting ref)
  *   - Modal close during tx (disabled cancel)
@@ -27,13 +27,16 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
   const [error, setError] = useState('');
   const submitting = useRef(false);
   const avatarPreview = useMemo(
-    () => name.trim() ? generateAgentAvatar(Date.now() % 10000, name.trim(), 48) : null,
-    [name]
+    () => (name.trim() ? generateAgentAvatar(Date.now() % 10000, name.trim(), 48) : null),
+    [name],
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { setError('Agent name is required'); return; }
+    if (!name.trim()) {
+      setError('Agent name is required');
+      return;
+    }
     if (submitting.current) return; // Double-submit guard
     submitting.current = true;
 
@@ -48,9 +51,12 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
         profileRoot = await storage.storeAgentProfile({
           name: name.trim(),
           description: desc.trim(),
-          capabilities: caps.split(',').map(c => c.trim()).filter(Boolean),
+          capabilities: caps
+            .split(',')
+            .map((c) => c.trim())
+            .filter(Boolean),
           owner: chain.address || '',
-          createdAt: Date.now()
+          createdAt: Date.now(),
         });
         profileRoot = `veridd://profiles/${profileRoot}`;
       } catch (storageErr) {
@@ -99,7 +105,8 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
           <div>
             <label className="text-xs text-gray-400 mb-1.5 block font-medium">Agent Name *</label>
             <input
-              value={name} onChange={e => setName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Alpha Trader"
               maxLength={64}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm 
@@ -111,9 +118,11 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
           <div>
             <label className="text-xs text-gray-400 mb-1.5 block font-medium">Description</label>
             <textarea
-              value={desc} onChange={e => setDesc(e.target.value)}
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
               placeholder="What does this agent do?"
-              rows={3} maxLength={500}
+              rows={3}
+              maxLength={500}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm 
                 focus:outline-none focus:border-violet-500 placeholder-gray-600 transition-colors resize-none"
             />
@@ -123,7 +132,8 @@ export const CreateAgent: React.FC<Props> = ({ chain, onCreated, onCancel }) => 
           <div>
             <label className="text-xs text-gray-400 mb-1.5 block font-medium">Capabilities</label>
             <input
-              value={caps} onChange={e => setCaps(e.target.value)}
+              value={caps}
+              onChange={(e) => setCaps(e.target.value)}
               placeholder="trading, analysis, security (comma separated)"
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm 
                 focus:outline-none focus:border-violet-500 placeholder-gray-600 transition-colors"

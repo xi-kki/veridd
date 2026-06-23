@@ -15,23 +15,27 @@ const DEMO_ACTIONS = [
   {
     type: 'market_analysis',
     input: 'Analyze ETH price movement last 24h. Identify key support and resistance.',
-    output: 'ETH at $3,450, down 2.3%. Support at $3,350 (200-day MA). Resistance at $3,550. Volume declining, consolidation expected. On-chain shows whale accumulation.'
+    output:
+      'ETH at $3,450, down 2.3%. Support at $3,350 (200-day MA). Resistance at $3,550. Volume declining, consolidation expected. On-chain shows whale accumulation.',
   },
   {
     type: 'trade_execution',
     input: 'Execute limit buy 10 ETH at $3,350. Stop-loss at $3,200.',
-    output: 'Order submitted: BUY 10 ETH @ $3,350 LIMIT. Stop @ $3,200 (-4.5%). R:R 1:2.3. Tx: 0x7421...f9e3.'
+    output:
+      'Order submitted: BUY 10 ETH @ $3,350 LIMIT. Stop @ $3,200 (-4.5%). R:R 1:2.3. Tx: 0x7421...f9e3.',
   },
   {
     type: 'security_audit',
     input: 'Review this contract for reentrancy vulnerabilities...',
-    output: 'ERROR: Reentrancy in withdraw(). State updates after external call. Fix: checks-effects-interactions pattern.'
+    output:
+      'ERROR: Reentrancy in withdraw(). State updates after external call. Fix: checks-effects-interactions pattern.',
   },
   {
     type: 'data_analysis',
     input: 'Analyze DEFI sector on-chain metrics this quarter.',
-    output: 'Top 10 TVL: $45.2B (+12% QoQ). Lido $24B, EigenLayer $8.5B, Aave $6.8B. Staking 53% of TVL. Restaking narratives driving growth.'
-  }
+    output:
+      'Top 10 TVL: $45.2B (+12% QoQ). Lido $24B, EigenLayer $8.5B, Aave $6.8B. Staking 53% of TVL. Restaking narratives driving growth.',
+  },
 ];
 
 /** Step in the review workflow — visualized as a timeline */
@@ -50,7 +54,10 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
   const [steps, setSteps] = useState<ReviewStep[]>([]);
 
   useEffect(() => {
-    chain.getAgent(agentId).then(a => a && setAgentName(a.name)).catch(() => {});
+    chain
+      .getAgent(agentId)
+      .then((a) => a && setAgentName(a.name))
+      .catch(() => {});
   }, [agentId, chain]);
 
   const handleRunReview = async (idx: number) => {
@@ -66,8 +73,12 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
     setSteps(workflowSteps);
 
     // Step 1: Simulate loading delay
-    await new Promise(r => setTimeout(r, 600));
-    setSteps(prev => prev.map((s, i) => i === 0 ? { ...s, status: 'done' } : i === 1 ? { ...s, status: 'active' } : s));
+    await new Promise((r) => setTimeout(r, 600));
+    setSteps((prev) =>
+      prev.map((s, i) =>
+        i === 0 ? { ...s, status: 'done' } : i === 1 ? { ...s, status: 'active' } : s,
+      ),
+    );
 
     // Step 2: Run review
     setLoading(true);
@@ -82,14 +93,22 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
       });
       setReview(result);
 
-      setSteps(prev => prev.map((s, i) => i === 1 ? { ...s, status: 'done' } : i === 2 ? { ...s, status: 'active' } : s));
-      await new Promise(r => setTimeout(r, 500));
-      setSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'done' } : s));
+      setSteps((prev) =>
+        prev.map((s, i) =>
+          i === 1 ? { ...s, status: 'done' } : i === 2 ? { ...s, status: 'active' } : s,
+        ),
+      );
+      await new Promise((r) => setTimeout(r, 500));
+      setSteps((prev) => prev.map((s) => (s.status === 'active' ? { ...s, status: 'done' } : s)));
 
       setStep('result');
     } catch (err: any) {
       setError(err.message);
-      setSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error', description: 'Failed' } : s));
+      setSteps((prev) =>
+        prev.map((s) =>
+          s.status === 'active' ? { ...s, status: 'error', description: 'Failed' } : s,
+        ),
+      );
     }
     setLoading(false);
   };
@@ -106,20 +125,28 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
       // Store action + review on 0G Storage
       const [actionRoot, reviewRoot] = await Promise.all([
         storage.storeAction({
-          agentId: String(agentId), actionType: action.type,
-          input: action.input, output: action.output, timestamp: Date.now()
+          agentId: String(agentId),
+          actionType: action.type,
+          input: action.input,
+          output: action.output,
+          timestamp: Date.now(),
         }),
         storage.storeReview({
-          agentId: String(agentId), reviewerId: chain.address || '',
-          score: review.score, reasoning: review.reasoning,
-          evidenceHashes: [], timestamp: Date.now()
-        })
+          agentId: String(agentId),
+          reviewerId: chain.address || '',
+          score: review.score,
+          reasoning: review.reasoning,
+          evidenceHashes: [],
+          timestamp: Date.now(),
+        }),
       ]);
 
       await chain.submitReview(
-        agentId, review.score,
-        actionRoot, reviewRoot,
-        review.reasoning.slice(0, 100)
+        agentId,
+        review.score,
+        actionRoot,
+        reviewRoot,
+        review.reasoning.slice(0, 100),
       );
 
       onSubmitted(review.score);
@@ -141,14 +168,21 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
               <p className="text-xs text-gray-400">{agentName || `Agent #${agentId}`}</p>
             </div>
           </div>
-          <button onClick={onCancel} className="text-gray-500 hover:text-gray-300 text-xl leading-none cursor-pointer">&times;</button>
+          <button
+            onClick={onCancel}
+            className="text-gray-500 hover:text-gray-300 text-xl leading-none cursor-pointer"
+          >
+            &times;
+          </button>
         </div>
 
         {/* ═══ STEP 1: Select Action ═══ */}
         {step === 'select' && (
           <div className="space-y-3">
             <p className="text-xs text-gray-500 mb-3">
-              Select an action. A peer agent on <span className="text-cyan-400 font-medium">0G Compute</span> will analyze and score it.
+              Select an action. A peer agent on{' '}
+              <span className="text-cyan-400 font-medium">0G Compute</span> will analyze and score
+              it.
             </p>
             {DEMO_ACTIONS.map((a, i) => (
               <button
@@ -178,8 +212,10 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
             {/* Agent Status Orb */}
             <div className="flex flex-col items-center mb-6">
               <div className="relative mb-3">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
-                  flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <div
+                  className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 
+                  flex items-center justify-center shadow-lg shadow-purple-500/20"
+                >
                   <div className="typing-dot !w-2.5 !h-2.5 !bg-white" />
                   <div className="typing-dot !w-2.5 !h-2.5 !bg-white" />
                   <div className="typing-dot !w-2.5 !h-2.5 !bg-white" />
@@ -194,16 +230,26 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
               {steps.map((s, i) => (
                 <div key={i} className="flex items-center gap-3">
                   {/* Status Icon */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs
                     ${s.status === 'done' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : ''}
                     ${s.status === 'active' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : ''}
                     ${s.status === 'pending' ? 'bg-gray-800 text-gray-600 border border-gray-700' : ''}
                     ${s.status === 'error' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : ''}
-                  `}>
-                    {s.status === 'done' ? '✓' : s.status === 'error' ? '✗' : s.status === 'active' ? '⟳' : ''}
+                  `}
+                  >
+                    {s.status === 'done'
+                      ? '✓'
+                      : s.status === 'error'
+                        ? '✗'
+                        : s.status === 'active'
+                          ? '⟳'
+                          : ''}
                   </div>
                   <div className="flex-1">
-                    <p className={`text-xs font-medium ${s.status === 'done' ? 'text-emerald-400' : s.status === 'active' ? 'text-cyan-400' : s.status === 'error' ? 'text-red-400' : 'text-gray-600'}`}>
+                    <p
+                      className={`text-xs font-medium ${s.status === 'done' ? 'text-emerald-400' : s.status === 'active' ? 'text-cyan-400' : s.status === 'error' ? 'text-red-400' : 'text-gray-600'}`}
+                    >
                       {s.label}
                     </p>
                     <p className="text-[10px] text-gray-600">{s.description}</p>
@@ -231,27 +277,45 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
 
               {/* Reasoning */}
               <div className="bg-gray-900/60 rounded-lg p-3.5 mb-3">
-                <p className="text-[10px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">Review Reasoning</p>
+                <p className="text-[10px] text-gray-500 mb-1.5 font-medium uppercase tracking-wider">
+                  Review Reasoning
+                </p>
                 <p className="text-sm text-gray-300 leading-relaxed">{review.reasoning}</p>
               </div>
 
               {/* Flags */}
               {review.flags?.length ? (
                 <div className="bg-amber-900/15 border border-amber-700/25 rounded-lg p-3">
-                  <p className="text-[10px] text-amber-400 font-medium uppercase tracking-wider mb-1">⚠️ Flags</p>
+                  <p className="text-[10px] text-amber-400 font-medium uppercase tracking-wider mb-1">
+                    ⚠️ Flags
+                  </p>
                   {review.flags.map((f, i) => (
-                    <p key={i} className="text-xs text-amber-300">{f}</p>
+                    <p key={i} className="text-xs text-amber-300">
+                      {f}
+                    </p>
                   ))}
                 </div>
               ) : null}
 
               {/* Verification Badge */}
               <div className="mt-3 flex items-center gap-2 text-[11px] text-gray-600 bg-gray-900/40 rounded-lg px-3 py-2">
-                <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <svg
+                  className="w-4 h-4 text-emerald-400 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
                 </svg>
-                <span>Stored on <strong className="text-emerald-400 font-medium">0G Storage</strong> with Merkle proof verification</span>
+                <span>
+                  Stored on <strong className="text-emerald-400 font-medium">0G Storage</strong>{' '}
+                  with Merkle proof verification
+                </span>
               </div>
             </div>
 
@@ -265,7 +329,10 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
             {/* Actions */}
             <div className="flex gap-3">
               <button
-                onClick={() => { setStep('select'); setReview(null); }}
+                onClick={() => {
+                  setStep('select');
+                  setReview(null);
+                }}
                 className="flex-1 py-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 
                   transition-all text-sm cursor-pointer font-medium"
               >
@@ -285,8 +352,10 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
         {/* ═══ STEP 4: Submitting ═══ */}
         {step === 'submitting' && (
           <div className="text-center py-10">
-            <div className="animate-spin w-10 h-10 border-2 border-violet-500 border-t-transparent 
-              rounded-full mx-auto mb-4" />
+            <div
+              className="animate-spin w-10 h-10 border-2 border-violet-500 border-t-transparent 
+              rounded-full mx-auto mb-4"
+            />
             <p className="text-sm text-gray-300 font-medium mb-1">Storing to 0G Storage...</p>
             <p className="text-xs text-gray-600">Action + Review with Merkle proof verification</p>
             <div className="flex items-center justify-center gap-4 mt-4 text-[10px] text-gray-700">

@@ -26,7 +26,7 @@ export const RocketCursor: React.FC<Props> = ({ x, y, tilt, onScreen, fumes }) =
   return (
     <>
       {/* Fumes behind rocket */}
-      {fumes.map(f => (
+      {fumes.map((f) => (
         <div
           key={f.id}
           className="absolute pointer-events-none z-60 rounded-full"
@@ -53,8 +53,22 @@ export const RocketCursor: React.FC<Props> = ({ x, y, tilt, onScreen, fumes }) =
           filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.5))',
         }}
       >
-        <svg viewBox="0 0 40 50" width="30" height="38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="20" cy="30" rx="7.5" ry="15.5" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+        <svg
+          viewBox="0 0 40 50"
+          width="30"
+          height="38"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <ellipse
+            cx="20"
+            cy="30"
+            rx="7.5"
+            ry="15.5"
+            fill="none"
+            stroke="rgba(255,255,255,0.4)"
+            strokeWidth="2"
+          />
           <path d="M13 22 Q20 1 27 22" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
           <ellipse cx="20" cy="30" rx="6" ry="14" fill="#7c3aed" stroke="white" strokeWidth="1.2" />
           <path d="M14 22 Q20 2 26 22" fill="#a855f7" stroke="white" strokeWidth="1" />

@@ -1,7 +1,7 @@
 /**
  * Veridd — 0G Chain Integration
  * Agentic ID (ERC-721) + reputation state on 0G Galileo Testnet
- * 
+ *
  * Edge cases handled:
  *   - No wallet installed / SSR guard
  *   - User rejects network switch (code 4001)
@@ -28,7 +28,7 @@ const CONTRACT_ABI = [
   'function getReviewCount(uint256 agentId) view returns (uint256)',
   'function verifyActionProof(uint256 agentId, uint256 reviewIndex, string claimedStorageRoot) view returns (bool)',
   'event AgentCreated(uint256 indexed agentId, string name, address indexed owner, uint256 timestamp)',
-  'event ReviewSubmitted(uint256 indexed agentId, uint256 score, address indexed reviewer, string actionRoot, uint256 timestamp)'
+  'event ReviewSubmitted(uint256 indexed agentId, uint256 score, address indexed reviewer, string actionRoot, uint256 timestamp)',
 ];
 
 const ZG_NETWORK = {
@@ -36,8 +36,20 @@ const ZG_NETWORK = {
   chainName: '0G Galileo Testnet',
   nativeCurrency: { name: '0G', symbol: '0G', decimals: 18 },
   rpcUrls: ['https://evmrpc-testnet.0g.ai'],
-  blockExplorerUrls: ['https://chainscan-galileo.0g.ai']
+  blockExplorerUrls: ['https://chainscan-galileo.0g.ai'],
 };
+
+const LOCAL_NETWORK = {
+  chainId: '0x7A69',
+  chainName: 'Localhost 8545',
+  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  rpcUrls: ['http://127.0.0.1:8545'],
+  blockExplorerUrls: [],
+};
+
+// Local Hardhat addresses start with 0x5FbDB2315678afecb
+// (deterministic CREATE2 deployer)
+const LOCAL_CONTRACT_PREFIX = '0x5FbDB2315678afecb';
 
 const TX_TIMEOUT = 120_000; // 2 minutes
 
@@ -49,7 +61,9 @@ export class VeriddChain {
 
   constructor(private contractAddress: string) {}
 
-  get address() { return this._address; }
+  get address() {
+    return this._address;
+  }
 
   /** Connect wallet with MetaMask / OKX Wallet */
   async connect(): Promise<string> {
@@ -58,11 +72,15 @@ export class VeriddChain {
       throw new Error('No wallet found. Install MetaMask or OKX Wallet to continue.');
     }
 
-    // Try to switch to 0G Galileo. If it fails, warn but still try to connect.
+    // Determine target network based on contract address
+    const isLocal = this.contractAddress.startsWith(LOCAL_CONTRACT_PREFIX);
+    const target = isLocal ? LOCAL_NETWORK : ZG_NETWORK;
+
+    // Try to switch to the target network
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: ZG_NETWORK.chainId }]
+        params: [{ chainId: target.chainId }],
       });
     } catch (switchError: any) {
       if (switchError.code === 4902) {
@@ -70,18 +88,28 @@ export class VeriddChain {
         try {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
-            params: [ZG_NETWORK]
+            params: [target],
           });
         } catch (addError: any) {
           console.warn('Could not add network:', addError.message);
-          throw new Error('Please add 0G Galileo Testnet to MetaMask manually.\nNetwork: 0G Galileo Testnet\nRPC: https://evmrpc-testnet.0g.ai\nChain ID: 16602\nSymbol: 0G');
+          if (isLocal) {
+            throw new Error(
+              'Add Localhost 8545 to MetaMask manually.\nRPC: http://127.0.0.1:8545\nChain ID: 31337\nSymbol: ETH',
+            );
+          } else {
+            throw new Error(
+              'Please add 0G Galileo Testnet to MetaMask manually.\nNetwork: 0G Galileo Testnet\nRPC: https://evmrpc-testnet.0g.ai\nChain ID: 16602\nSymbol: 0G',
+            );
+          }
         }
       } else if (switchError.code === 4001) {
         console.warn('Network switch rejected, proceeding with current network...');
         // Don't throw — let the user switch manually
       } else {
-        // Network may already exist but switch failed — try connecting anyway
-        console.warn('Network switch failed, attempting connection on current network:', switchError.message);
+        console.warn(
+          'Network switch failed, attempting connection on current network:',
+          switchError.message,
+        );
       }
     }
 
@@ -107,13 +135,16 @@ export class VeriddChain {
     if (description.length > 500) throw new Error('Description too long (max 500 characters)');
 
     const tx = await this.contract.createAgent(name, description, metadataURI);
-    
+
     // Wait with timeout
     const receipt = await Promise.race([
       tx.wait(),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Transaction timed out. Check the explorer.')), TX_TIMEOUT)
-      )
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Transaction timed out. Check the explorer.')),
+          TX_TIMEOUT,
+        ),
+      ),
     ]);
 
     // Parse the AgentCreated event
@@ -123,7 +154,9 @@ export class VeriddChain {
         if (parsed?.name === 'AgentCreated') {
           return parsed.args.agentId;
         }
-      } catch { /* skip unrelated logs */ }
+      } catch {
+        /* skip unrelated logs */
+      }
     }
     throw new Error('Agent created but could not read the ID. Check the explorer.');
   }
@@ -152,7 +185,13 @@ export class VeriddChain {
   }
 
   /** Submit a peer review onchain */
-  async submitReview(agentId: number | bigint, score: number, actionRoot: string, reviewRoot: string, summary: string) {
+  async submitReview(
+    agentId: number | bigint,
+    score: number,
+    actionRoot: string,
+    reviewRoot: string,
+    summary: string,
+  ) {
     if (!this.contract) throw new Error('Not connected');
     if (!actionRoot || !reviewRoot) throw new Error('Missing storage proofs');
     if (score < 1 || score > 5) throw new Error('Score must be between 1 and 5');
@@ -160,30 +199,42 @@ export class VeriddChain {
     const tx = await this.contract.submitReview(agentId, score, actionRoot, reviewRoot, summary);
     return Promise.race([
       tx.wait(),
-      new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Transaction timed out. Check the explorer.')), TX_TIMEOUT)
-      )
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Transaction timed out. Check the explorer.')),
+          TX_TIMEOUT,
+        ),
+      ),
     ]);
   }
 
   /** Get all reviews for an agent */
   async getReviews(agentId: number | bigint) {
     if (!this.contract) throw new Error('Not connected');
-    try { return await this.contract.getReviews(agentId); }
-    catch { return []; }
+    try {
+      return await this.contract.getReviews(agentId);
+    } catch {
+      return [];
+    }
   }
 
   /** Get agent IDs owned by current user */
   async getMyAgents(): Promise<bigint[]> {
     if (!this.contract || !this._address) throw new Error('Not connected');
-    try { return await this.contract.getAgentsByOwner(this._address); }
-    catch { return []; }
+    try {
+      return await this.contract.getAgentsByOwner(this._address);
+    } catch {
+      return [];
+    }
   }
 
   /** Get agent IDs by owner address (alias for the contract call) */
   async getAgentsByOwner(owner: string): Promise<bigint[]> {
     if (!this.contract) throw new Error('Not connected');
-    try { return await this.contract.getAgentsByOwner(owner); }
-    catch { return []; }
+    try {
+      return await this.contract.getAgentsByOwner(owner);
+    } catch {
+      return [];
+    }
   }
 }

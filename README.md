@@ -7,7 +7,7 @@
 
 > **Zero Cup 2026 — Global Vibe Coding Tournament**
 >
-> *Trustpilot for AI agents — with cryptographic proof, powered by 0G.*
+> _Trustpilot for AI agents — with cryptographic proof, powered by 0G._
 
 <br>
 
@@ -32,14 +32,14 @@
 
 ## 📋 Quick Access for Judges
 
-| Resource | Link |
-|----------|------|
-| 🌐 **Live Demo** | [veridd.netlify.app](https://veridd.netlify.app) |
+| Resource                   | Link                                                                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 🌐 **Live Demo**           | [veridd.netlify.app](https://veridd.netlify.app)                                                                                   |
 | 📄 **Contract (Verified)** | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
-| 🖼️ **Screenshot** | [View](https://files.catbox.moe/tflwui.PNG) |
-| 🎥 **Demo Video** | *(coming soon)* |
-| 📦 **Source Code** | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd) |
-| ⛓️ **Network** | 0G Galileo Testnet (Chain ID: 16602) |
+| 🖼️ **Screenshot**          | [View](https://files.catbox.moe/tflwui.PNG)                                                                                        |
+| 🎥 **Demo Video**          | _(coming soon)_                                                                                                                    |
+| 📦 **Source Code**         | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd)                                                                       |
+| ⛓️ **Network**             | 0G Galileo Testnet (Chain ID: 16602)                                                                                               |
 
 ---
 
@@ -53,9 +53,10 @@ Every AI agent gets a verifiable, onchain credit score they earn through real wo
 
 ## ❓ Problem
 
-AI agents are exploding across DeFi, trading, analytics, auditing, and automation. But there's **no way to know if an agent is reliable** before trusting it with access, data, or payment. 
+AI agents are exploding across DeFi, trading, analytics, auditing, and automation. But there's **no way to know if an agent is reliable** before trusting it with access, data, or payment.
 
 Current reputation systems are:
+
 - ❌ Centralized — one company controls the data
 - ❌ Opaque — no way to verify claims
 - ❌ Siloed — reputation doesn't travel between platforms
@@ -68,12 +69,12 @@ Current reputation systems are:
 
 VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** built entirely on 0G's decentralized stack:
 
-| 0G Product | What VERIDD Uses It For |
-|------------|------------------------|
-| **🧬 0G Chain** | Agentic ID (ERC-721) minting + immutable reputation state on Galileo testnet |
-| **💾 0G Storage** | Action logs + peer review reasoning with Merkle tree cryptographic proofs |
-| **🧠 0G Compute** | Decentralized peer review AI agents that analyze and score actions |
-| **🆔 Agentic ID** | Portable onchain identity for every registered agent via ERC-7857 standard |
+| 0G Product        | What VERIDD Uses It For                                                      |
+| ----------------- | ---------------------------------------------------------------------------- |
+| **🧬 0G Chain**   | Agentic ID (ERC-721) minting + immutable reputation state on Galileo testnet |
+| **💾 0G Storage** | Action logs + peer review reasoning with Merkle tree cryptographic proofs    |
+| **🧠 0G Compute** | Decentralized peer review AI agents that analyze and score actions           |
+| **🆔 Agentic ID** | Portable onchain identity for every registered agent via ERC-7857 standard   |
 
 ---
 
@@ -136,25 +137,25 @@ VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** b
 
 ## 📊 VERIDD Score Tiers
 
-| Score Range | Tier | Badge | Meaning |
-|-------------|------|-------|---------|
-| 4.5 – 5.0 | 🏆 **Elite** | ⭐⭐⭐⭐⭐ | Exceptional, beyond expectations |
-| 4.0 – 4.4 | ✅ **Trusted** | ⭐⭐⭐⭐ | Reliable, above average |
-| 3.0 – 3.9 | 📊 **Reliable** | ⭐⭐⭐ | Met expectations |
-| 2.0 – 2.9 | ⚠️ **Caution** | ⭐⭐ | Below average |
-| 1.0 – 1.9 | 🚫 **Risky** | ⭐ | Poor track record |
+| Score Range | Tier            | Badge      | Meaning                          |
+| ----------- | --------------- | ---------- | -------------------------------- |
+| 4.5 – 5.0   | 🏆 **Elite**    | ⭐⭐⭐⭐⭐ | Exceptional, beyond expectations |
+| 4.0 – 4.4   | ✅ **Trusted**  | ⭐⭐⭐⭐   | Reliable, above average          |
+| 3.0 – 3.9   | 📊 **Reliable** | ⭐⭐⭐     | Met expectations                 |
+| 2.0 – 2.9   | ⚠️ **Caution**  | ⭐⭐       | Below average                    |
+| 1.0 – 1.9   | 🚫 **Risky**    | ⭐         | Poor track record                |
 
 ---
 
 ## 🎮 UI Features (Judge Please Try)
 
-| Feature | Details |
-|---------|---------|
+| Feature                    | Details                                                                                                        |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | 🏅 **Floating Medal Card** | Physics-driven superhero tilt on the 0G logo. Card hangs from circular medal ribbon. Cape tail cascades below. |
-| 🚀 **Rocket Cursor** | Purple rocket with white outline, tilts with movement, emits exhaust fumes as you move |
-| 🎯 **3-Hover Mechanic** | Card dodges twice, on 3rd reach it surrenders — connect button pulses |
-| 🎉 **Celebration Burst** | 60-particle burst on connect click, trust ticker counts to 12,847 agents |
-| 🌌 **Space Scene** | Asteroids, ringed planets, comets drifting in the background |
+| 🚀 **Rocket Cursor**       | Purple rocket with white outline, tilts with movement, emits exhaust fumes as you move                         |
+| 🎯 **3-Hover Mechanic**    | Card dodges twice, on 3rd reach it surrenders — connect button pulses                                          |
+| 🎉 **Celebration Burst**   | 60-particle burst on connect click, trust ticker counts to 12,847 agents                                       |
+| 🌌 **Space Scene**         | Asteroids, ringed planets, comets drifting in the background                                                   |
 
 👉 **Try it:** https://veridd.netlify.app
 
@@ -162,23 +163,24 @@ VERIDD gives every AI agent an **immutable, verifiable, onchain credit score** b
 
 ## 🧱 Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| **Smart Contracts** | Solidity ^0.8.20, OpenZeppelin, Hardhat |
-| **Network** | 0G Galileo Testnet (Chain ID: 16602) |
+| Component            | Technology                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Smart Contracts**  | Solidity ^0.8.20, OpenZeppelin, Hardhat                                                                                            |
+| **Network**          | 0G Galileo Testnet (Chain ID: 16602)                                                                                               |
 | **Contract Address** | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
-| **Storage SDK** | @0gfoundation/0g-storage-ts-sdk (Merkle proofs) |
-| **Compute SDK** | @0gfoundation/0g-compute-ts-sdk (peer review agents) |
-| **Identity** | Agentic ID (ERC-7857) via VeriddReputation contract |
-| **Frontend** | React 18 + Vite + TypeScript + Tailwind CSS |
-| **Wallet** | ethers.js v6 + MetaMask / OKX Wallet |
-| **Deployment** | Netlify (CI/CD from GitHub) |
+| **Storage SDK**      | @0gfoundation/0g-storage-ts-sdk (Merkle proofs)                                                                                    |
+| **Compute SDK**      | @0gfoundation/0g-compute-ts-sdk (peer review agents)                                                                               |
+| **Identity**         | Agentic ID (ERC-7857) via VeriddReputation contract                                                                                |
+| **Frontend**         | React 18 + Vite + TypeScript + Tailwind CSS                                                                                        |
+| **Wallet**           | ethers.js v6 + MetaMask / OKX Wallet                                                                                               |
+| **Deployment**       | Netlify (CI/CD from GitHub)                                                                                                        |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - MetaMask or OKX Wallet with 0G Galileo testnet added
 - 0G testnet tokens from [faucet.0g.ai](https://faucet.0g.ai)
@@ -212,14 +214,14 @@ Open **http://localhost:5173** and connect your wallet.
 
 **VeriddReputation** — ERC-721 with reputation scoring.
 
-| Detail | Value |
-|--------|-------|
-| **Name** | Veridd Reputation |
-| **Symbol** | VERIDD |
-| **Network** | 0G Galileo Testnet |
-| **Chain ID** | 16602 |
-| **Address** | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
-| **Standard** | ERC-721 (Agentic ID compatible) |
+| Detail       | Value                                                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Name**     | Veridd Reputation                                                                                                                  |
+| **Symbol**   | VERIDD                                                                                                                             |
+| **Network**  | 0G Galileo Testnet                                                                                                                 |
+| **Chain ID** | 16602                                                                                                                              |
+| **Address**  | [`0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| **Standard** | ERC-721 (Agentic ID compatible)                                                                                                    |
 
 ### Core Functions
 
@@ -251,25 +253,25 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 
 ## 👤 Team
 
-| | |
-|---|---|
-| **Isaac Adeleke** | Builder, Product Designer |
-| 🐦 **X / Twitter** | [@vytalique](https://x.com/vytalique) |
-| 💼 **LinkedIn** | [adelekeisaac](https://linkedin.com/in/adelekeisaac) |
-| 🏆 **Past** | Design bounty winner — Quizfinity (ICP blockchain) |
+|                    |                                                      |
+| ------------------ | ---------------------------------------------------- |
+| **Isaac Adeleke**  | Builder, Product Designer                            |
+| 🐦 **X / Twitter** | [@vytalique](https://x.com/vytalique)                |
+| 💼 **LinkedIn**    | [adelekeisaac](https://linkedin.com/in/adelekeisaac) |
+| 🏆 **Past**        | Design bounty winner — Quizfinity (ICP blockchain)   |
 
 ---
 
 ## 📚 Resources
 
-| Resource | Link |
-|----------|------|
-| 0G Documentation | [docs.0g.ai](https://docs.0g.ai) |
-| 0G Galileo Explorer | [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai) |
-| 0G Faucet | [faucet.0g.ai](https://faucet.0g.ai) |
-| Agentic ID (ERC-7857) | [0g.ai/agentic-id](https://0g.ai) |
-| Zero Cup | [0g.ai/arena/zero-cup](https://0g.ai/arena/zero-cup) |
-| Our Contract | [`0xC2c5C...`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
+| Resource              | Link                                                                                               |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| 0G Documentation      | [docs.0g.ai](https://docs.0g.ai)                                                                   |
+| 0G Galileo Explorer   | [chainscan-galileo.0g.ai](https://chainscan-galileo.0g.ai)                                         |
+| 0G Faucet             | [faucet.0g.ai](https://faucet.0g.ai)                                                               |
+| Agentic ID (ERC-7857) | [0g.ai/agentic-id](https://0g.ai)                                                                  |
+| Zero Cup              | [0g.ai/arena/zero-cup](https://0g.ai/arena/zero-cup)                                               |
+| Our Contract          | [`0xC2c5C...`](https://chainscan-galileo.0g.ai/address/0xC2c5C3589Db264620524CE7E370D8f7E6c11fc0c) |
 
 ---
 

@@ -1,19 +1,25 @@
 /**
  * VERIDD — Peer Review Agent (runs on 0G Compute)
  * Scores agent actions and returns a VERIDD score 1-5
- * 
+ *
  * Usage: npx ts-node scripts/review-agent.ts --agent-id=1
  */
 import { Router } from '@0gfoundation/0g-compute-ts-sdk';
 
 interface ReviewInput {
-  agentId: string; agentName: string; actionType: string;
-  input: string; output: string;
+  agentId: string;
+  agentName: string;
+  actionType: string;
+  input: string;
+  output: string;
 }
 
 interface ReviewOutput {
-  score: number; reasoning: string; confidence: number;
-  flags: string[]; reviewedAt: number;
+  score: number;
+  reasoning: string;
+  confidence: number;
+  flags: string[];
+  reviewedAt: number;
 }
 
 const PROMPT = `You are a VERIDD reviewer scoring AI agent actions 1-5.
@@ -28,10 +34,10 @@ async function run(input: ReviewInput): Promise<ReviewOutput> {
       model: 'llama-3-70b',
       messages: [
         { role: 'system', content: PROMPT },
-        { role: 'user', content: JSON.stringify(input) }
+        { role: 'user', content: JSON.stringify(input) },
       ],
       temperature: 0.3,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
     });
     const r = JSON.parse(res.choices[0].message.content);
     return {
@@ -39,7 +45,7 @@ async function run(input: ReviewInput): Promise<ReviewOutput> {
       reasoning: r.reasoning || '',
       confidence: r.confidence || 0.7,
       flags: r.flags || [],
-      reviewedAt: Date.now()
+      reviewedAt: Date.now(),
     };
   }
 
@@ -50,12 +56,20 @@ async function run(input: ReviewInput): Promise<ReviewOutput> {
     reasoning: err ? 'Action errors detected' : 'Well-structured analysis',
     confidence: 0.75,
     flags: err ? ['Errors detected'] : [],
-    reviewedAt: Date.now()
+    reviewedAt: Date.now(),
   };
 }
 
-const agentId = process.argv.find(a => a.startsWith('--agent-id='))?.split('=')[1];
-if (!agentId) { console.error('Usage: --agent-id=N'); process.exit(1); }
+const agentId = process.argv.find((a) => a.startsWith('--agent-id='))?.split('=')[1];
+if (!agentId) {
+  console.error('Usage: --agent-id=N');
+  process.exit(1);
+}
 
-run({ agentId, agentName: `Agent #${agentId}`, actionType: 'general', input: 'N/A', output: 'Processing...' })
-  .then(r => console.log(JSON.stringify(r, null, 2)));
+run({
+  agentId,
+  agentName: `Agent #${agentId}`,
+  actionType: 'general',
+  input: 'N/A',
+  output: 'Processing...',
+}).then((r) => console.log(JSON.stringify(r, null, 2)));
