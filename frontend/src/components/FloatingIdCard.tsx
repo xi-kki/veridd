@@ -8,10 +8,10 @@ interface Props {
 }
 
 const HOVER_THRESHOLD = 4;
-const BOUNDS = { xMin: 15, xMax: 85, yMin: 15, yMax: 80 };
+const BOUNDS = { xMin: 12, xMax: 88, yMin: 12, yMax: 80 };
 const CENTER = { x: 50, y: 42 };
-const REPEL_STRENGTH = 0.25; // How hard the card dodges cursor
-const APPROACH_SPEED = 0.006; // How eagerly it returns
+const REPEL_STRENGTH = 0.45; // Strong dodge — card really runs away
+const APPROACH_SPEED = 0.015; // Eager pull toward cursor
 
 /**
  * Floating VERIDD Identity Card — superhero physics, 8-hover mechanic,
@@ -255,39 +255,39 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       if (caught) {
         // ── Phase 3: Caught! Return to center smoothly ──
-        velRef.current.x += (CENTER.x - cardX) * 0.012;
-        velRef.current.y += (CENTER.y - cardY) * 0.012;
+        velRef.current.x += (CENTER.x - cardX) * 0.015;
+        velRef.current.y += (CENTER.y - cardY) * 0.015;
       } else if (mouseActive) {
-        if (streak < 5) {
+        if (streak < 2) {
           // ── Phase 1: "Can't catch me!" — STRONG REPEL ──
-          // Card aggressively pushes away from cursor
-          if (dist < 30 && dist > 0.5) {
-            const repel = ((30 - dist) / 30) * REPEL_STRENGTH;
+          // Card aggressively pushes away from cursor (visible dodge)
+          if (dist < 45 && dist > 0.5) {
+            const repel = ((45 - dist) / 45) * REPEL_STRENGTH;
             velRef.current.x += -(dx / dist) * repel;
             velRef.current.y += -(dy / dist) * repel * 0.6;
           }
-          // Gentle center pull when far
-          velRef.current.x += (CENTER.x - cardX) * 0.001;
-          velRef.current.y += (CENTER.y - cardY) * 0.001;
+          // Gentle center pull when cursor far away
+          velRef.current.x += (CENTER.x - cardX) * 0.0008;
+          velRef.current.y += (CENTER.y - cardY) * 0.0008;
         } else {
-          // ── Phase 2: "Okay fine..." — CLEAR APPROACH ──
-          // Card drifts toward cursor with visible pull
-          const pull = Math.min(dist * APPROACH_SPEED, 0.15);
+          // ── Phase 2: "Okay fine..." — STRONG APPROACH ──
+          // Card eagerly drifts toward cursor
+          const pull = Math.min(dist * APPROACH_SPEED, 0.3);
           velRef.current.x += (dx / (dist || 1)) * pull;
           velRef.current.y += (dy / (dist || 1)) * pull * 0.7;
-          // Soft center pull to avoid sticking to cursor
-          velRef.current.x += (CENTER.x - cardX) * 0.001;
-          velRef.current.y += (CENTER.y - cardY) * 0.001;
+          // Gentle center pull to avoid sticking
+          velRef.current.x += (CENTER.x - cardX) * 0.0005;
+          velRef.current.y += (CENTER.y - cardY) * 0.0005;
         }
       } else {
         // No mouse — drift back to center
-        velRef.current.x += (CENTER.x - cardX) * 0.003;
-        velRef.current.y += (CENTER.y - cardY) * 0.003;
+        velRef.current.x += (CENTER.x - cardX) * 0.005;
+        velRef.current.y += (CENTER.y - cardY) * 0.005;
       }
 
       // Low damping = fluid, floaty overshoot
-      velRef.current.x *= 0.962;
-      velRef.current.y *= 0.962;
+      velRef.current.x *= 0.96;
+      velRef.current.y *= 0.96;
 
       let newX = cardX + velRef.current.x + floatX * 0.004;
       let newY = cardY + velRef.current.y + floatY * 0.004;
