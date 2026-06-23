@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { RocketCursor } from './RocketCursor';
 import { SpaceObjects } from './SpaceObjects';
+import { MissionTerminal } from './MissionTerminal';
 
 interface Props {
   onConnect: () => void;
 }
 
-const HOVER_THRESHOLD = 8;
-const BOUNDS = { xMin: 18, xMax: 82, yMin: 18, yMax: 75 };
+const HOVER_THRESHOLD = 5;
+const BOUNDS = { xMin: 15, xMax: 85, yMin: 15, yMax: 80 };
+const CENTER = { x: 50, y: 42 };
 
 /**
  * Floating VERIDD Identity Card — superhero physics, 8-hover mechanic,
@@ -53,6 +55,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const [fumes, setFumes] = useState<
     Array<{ id: number; x: number; y: number; size: number; opacity: number }>
   >([]);
+  const [mousePct, setMousePct] = useState({ x: 50, y: 50 });
 
   // ───── Space objects (stable across renders) ─────────────────────────
   const spaceObjects = useMemo(() => {
@@ -130,6 +133,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
       setCursorPos({ x: px, y: py });
       setMouseOnScreen(true);
+      setMousePct({ x: mx, y: my });
 
       const targetTilt = Math.max(-25, Math.min(25, -mouseVelRef.current.x * 0.3));
       setRocketTilt((prev) => prev + (targetTilt - prev) * 0.15);
@@ -184,56 +188,94 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     setMouseOnScreen(false);
   }, [caught]);
 
-  // ───── Physics loop ──────────────────────────────────────────────────
+  // ───── Physics loop — "5 away, 3 toward, boomerang back" ────────────
+  //
+  // How it works:
+  // 1. The card gently floats at center with organic sine-wave breathing.
+  // 2. When the cursor is >5% away: a soft magnetic pull draws the card
+  //    toward it — playful chase, not aggressive.
+  // 3. When the cursor gets <3% away: the card briefly follows (curiosity)
+  //    then a spring force boomerangs it back toward center.
+  // 4. Low damping (0.965) gives a fluid, rubber-band feel with overshoot.
+  // 5. After the cursor leaves: card drifts back to center naturally.
+  // 6. Tilt responds to velocity for a living, breathing object feel.
   useEffect(() => {
     let running = true;
     const animate = () => {
       if (!running) return;
       floatTime.current += 0.016;
 
-      const floatX = Math.sin(floatTime.current * 0.5) * 1.2;
-      const floatY = Math.sin(floatTime.current * 0.7) * 1.5;
-      const dx = mouseRef.current.x - cardX;
-      const dy = mouseRef.current.y - cardY;
+      // Organic idle float — two overlapping sine waves for natural feel
+      const floatX =
+        Math.sin(floatTime.current * 0.4) * 1.8 + Math.sin(floatTime.current * 0.12) * 1.2;
+      const floatY =
+        Math.sin(floatTime.current * 0.6) * 2.2 + Math.cos(floatTime.current * 0.18) * 1.5;
+
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const dx = mx - cardX;
+      const dy = my - cardY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const streak = hoverStreakRef.current;
+      const mouseActive = mx > -1000;
 
       if (caught && attractedRef.current) {
-        velRef.current.x += (50 - cardX) * 0.006;
-        velRef.current.y += (42 - cardY) * 0.006;
-      } else if (!caught && streak >= 5 && streak < HOVER_THRESHOLD) {
-        const pull = Math.min(dist * 0.003, 0.1);
-        velRef.current.x += (dx / (dist || 1)) * pull;
-        velRef.current.y += (dy / (dist || 1)) * pull;
-      } else if (!caught && dist < 28 && dist > 0.5) {
-        const repel = ((28 - dist) / 28) * 0.12;
-        velRef.current.x += -(dx / dist) * repel;
-        velRef.current.y += -(dy / dist) * repel * 0.6;
+        // Caught — pull toward center
+        velRef.current.x += (CENTER.x - cardX) * 0.008;
+        velRef.current.y += (CENTER.y - cardY) * 0.008;
+      } else if (mouseActive) {
+        if (dist > 5) {
+          // ── "5 away" — gentle chase ──
+          // Soft magnetic pull toward cursor, stronger when farther
+          const pullStrength = Math.min(dist * 0.0025, 0.08);
+          velRef.current.x += (dx / (dist || 1)) * pullStrength;
+          velRef.current.y += (dy / (dist || 1)) * pullStrength * 0.7;
+        } else if (dist < 3) {
+          // ── "3 toward" — brief follow, then boomerang ──
+          // Quick follow toward cursor
+          const followStrength = 0.06 * (1 - dist / 3);
+          velRef.current.x += (dx / (dist || 1)) * followStrength;
+          velRef.current.y += (dy / (dist || 1)) * followStrength * 0.6;
+          // Also start pulling back to center (boomerang)
+          velRef.current.x += (CENTER.x - cardX) * 0.003;
+          velRef.current.y += (CENTER.y - cardY) * 0.003;
+        } else {
+          // Between 3 and 5 — neutral zone, gentle center pull
+          velRef.current.x += (CENTER.x - cardX) * 0.002;
+          velRef.current.y += (CENTER.y - cardY) * 0.002;
+        }
       } else {
-        velRef.current.x += (50 - cardX) * 0.0008;
-        velRef.current.y += (42 - cardY) * 0.0008;
+        // No mouse — drift back to center
+        velRef.current.x += (CENTER.x - cardX) * 0.003;
+        velRef.current.y += (CENTER.y - cardY) * 0.003;
       }
 
-      velRef.current.x *= 0.94;
-      velRef.current.y *= 0.94;
+      // Low damping = fluid, floaty, rubber-band feel
+      velRef.current.x *= 0.965;
+      velRef.current.y *= 0.965;
 
-      let newX = cardX + velRef.current.x + floatX * 0.006;
-      let newY = cardY + velRef.current.y + floatY * 0.006;
+      // Apply velocity + organic float (subtle)
+      let newX = cardX + velRef.current.x + floatX * 0.004;
+      let newY = cardY + velRef.current.y + floatY * 0.004;
       newX = Math.max(BOUNDS.xMin, Math.min(BOUNDS.xMax, newX));
       newY = Math.max(BOUNDS.yMin, Math.min(BOUNDS.yMax, newY));
 
       setCardX(newX);
       setCardY(newY);
 
+      // Tilt — responsive to velocity, like the card is alive
       setTilt((prev) => ({
-        rx: prev.rx + (Math.max(-8, Math.min(8, -velRef.current.y * 0.5)) - prev.rx) * 0.08,
-        ry: prev.ry + (Math.max(-12, Math.min(12, velRef.current.x * 0.5)) - prev.ry) * 0.08,
+        rx:
+          prev.rx +
+          (Math.max(-10, Math.min(10, -velRef.current.y * 0.6)) - prev.rx) * 0.06,
+        ry:
+          prev.ry +
+          (Math.max(-14, Math.min(14, velRef.current.x * 0.6)) - prev.ry) * 0.06,
       }));
 
       // Drift fumes
       setFumes((prev) =>
         prev
-          .map((f) => ({ ...f, y: f.y + 0.5, size: f.size * 0.99, opacity: f.opacity * 0.98 }))
+          .map((f) => ({ ...f, y: f.y + 0.4, size: f.size * 0.99, opacity: f.opacity * 0.98 }))
           .filter((f) => f.opacity > 0.01),
       );
 
@@ -286,7 +328,12 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         fumes={fumes}
       />
 
-      <SpaceObjects objects={spaceObjects} time={floatTime.current} />
+      <SpaceObjects
+        objects={spaceObjects}
+        time={floatTime.current}
+        mouseX={mousePct.x}
+        mouseY={mousePct.y}
+      />
 
       {/* Celebration particles */}
       {celebrating &&
@@ -535,17 +582,8 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         </div>
       </div>
 
-      {/* Tagline */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-        <p
-          className="text-sm text-gray-400 animate-fade-in max-w-[340px] leading-relaxed"
-          style={{ animationDelay: '0.5s' }}
-        >
-          Onchain reputation your AI agents{' '}
-          <span className="text-violet-400 font-medium">earn and own</span> — verified, immutable,
-          always theirs.
-        </p>
-      </div>
+      {/* Mission Terminal — intergalactic scrolling command-line */}
+      <MissionTerminal />
     </div>
   );
 };
