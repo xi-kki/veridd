@@ -7,6 +7,7 @@ interface Props {
   chain: VeriddChain;
   agents: Array<{ agentId: number; name: string }>;
   onScoreUpdate: () => void;
+  demoMode?: boolean;
 }
 
 interface LogEntry {
@@ -74,7 +75,7 @@ const LogIcon: React.FC<{ name: string }> = ({ name }) => {
   );
 };
 
-export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }) => {
+export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, demoMode }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [running, setRunning] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
@@ -112,18 +113,31 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
 
       await delay(1000);
 
-      const storage = new VeriddStorage();
-      const actionResult = await storage.storeAction({
-        agentId: String(agentA.agentId),
-        actionType: action.type,
-        input: action.input,
-        output: action.output,
-        timestamp: Date.now(),
-      });
-      addLog('hard-drive', `0G Storage: action proof stored → ${actionResult.root.slice(0, 10)}...`, 'text-emerald-400');
+      let actionRoot: string;
+      let actionId: bigint | number;
 
-      const actionId = await chain.submitAction(action.type, actionResult.root);
-      addLog('link', `0G Chain: Action #${actionId} recorded for ${agentA.name}`, 'text-cyan-400');
+      if (demoMode) {
+        // Simulated: no real API calls
+        actionRoot = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        actionId = 100 + actionIndexRef.current;
+        addLog('hard-drive', `0G Storage: action proof stored → ${actionRoot.slice(0, 10)}...`, 'text-emerald-400');
+        addLog('link', `0G Chain: Action #${actionId} recorded for ${agentA.name}`, 'text-cyan-400');
+      } else {
+        const storage = new VeriddStorage();
+        const actionResult = await storage.storeAction({
+          agentId: String(agentA.agentId),
+          agentName: agentA.name,
+          actionType: action.type,
+          input: action.input,
+          output: action.output,
+          timestamp: Date.now(),
+        });
+        actionRoot = actionResult.root;
+        addLog('hard-drive', `0G Storage: action proof stored → ${actionResult.root.slice(0, 10)}...`, 'text-emerald-400');
+
+        actionId = await chain.submitAction(action.type, actionResult.root);
+        addLog('link', `0G Chain: Action #${actionId} recorded for ${agentA.name}`, 'text-cyan-400');
+      }
 
       await delay(2000);
 
@@ -149,30 +163,37 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
       // ── Agent B submits review on-chain ──
       addLog('pen-line', `${agentB.name} submitting review on 0G Chain...`, 'text-violet-400');
 
-      const reviewResult = await storage.storeReview({
-        agentId: String(agentA.agentId),
-        reviewerId: chain.address || '',
-        score: review.score,
-        reasoning: review.reasoning,
-        evidenceHashes: [],
-        timestamp: Date.now(),
-      });
+      if (demoMode) {
+        const reviewRoot = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        addLog('check-circle', `${agentA.name} VERIDD updated → ${review.score}/5 (${agentB.name} reviewed)`, 'text-green-400');
+      } else {
+        const storage = new VeriddStorage();
+        const reviewResult = await storage.storeReview({
+          agentId: String(agentA.agentId),
+          reviewerId: chain.address || '',
+          reviewerName: agentB.name,
+          score: review.score,
+          reasoning: review.reasoning,
+          evidenceHashes: [],
+          timestamp: Date.now(),
+        });
 
-      await chain.submitReview(
-        agentA.agentId,
-        review.score,
-        actionResult.root,
-        reviewResult.root,
-        review.reasoning.slice(0, 100),
-      );
+        await chain.submitReview(
+          agentA.agentId,
+          review.score,
+          actionRoot,
+          reviewResult.root,
+          review.reasoning.slice(0, 100),
+        );
 
-      addLog('check-circle', `${agentA.name} VERIDD updated → ${review.score}/5 (${agentB.name} reviewed)`, 'text-green-400');
+        addLog('check-circle', `${agentA.name} VERIDD updated → ${review.score}/5 (${agentB.name} reviewed)`, 'text-green-400');
+      }
 
       onScoreUpdate();
     } catch (err: any) {
       addLog('x-circle', `Error: ${err.message.slice(0, 100)}`, 'text-red-400');
     }
-  }, [chain, agents, onScoreUpdate, addLog]);
+  }, [chain, agents, onScoreUpdate, addLog, demoMode]);
 
   // ───── Start / Stop ─────
   const start = useCallback(() => {
@@ -209,6 +230,11 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate }
           <span className="text-[11px] bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded-full border border-violet-500/20 font-medium">
             auto
           </span>
+          {demoMode && (
+            <span className="text-[11px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 font-medium">
+              demo
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {running && (

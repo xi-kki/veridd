@@ -334,6 +334,7 @@ function App() {
                     chain={chain}
                     agents={agents}
                     onScoreUpdate={() => loadAgents(chain)}
+                    demoMode={true}
                   />
                 </>
               )}
@@ -353,6 +354,7 @@ function App() {
                   <LiveNetworkFeed
                     contractAddress={CONTRACT_ADDRESS}
                     rpcUrl="https://evmrpc-testnet.0g.ai"
+                    demoMode={true}
                   />
                 </div>
               )}
