@@ -149,7 +149,7 @@ export const MissionTerminal: React.FC = () => {
   }, [MESSAGES_SAFE.length]);
 
   return (
-    <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 w-full max-w-[460px] px-4 z-20 pointer-events-none">
+    <div className="absolute bottom-[100px] left-1/2 -translate-x-1/2 w-[280px] sm:w-[320px] z-20 pointer-events-none">
       <div
         ref={containerRef}
         className="relative bg-black/50 backdrop-blur-sm rounded-lg border border-emerald-500/15"
@@ -167,7 +167,7 @@ export const MissionTerminal: React.FC = () => {
         />
 
         {/* Top bar */}
-        <div className="flex items-center gap-1 px-2.5 py-0.5 border-b border-emerald-500/10">
+        <div className="flex items-center gap-1 px-5 py-0.5 border-b border-emerald-500/10">
           <div className="w-1 h-1 rounded-full bg-emerald-500/40" />
           <span className="text-[7px] text-emerald-500/40 font-mono tracking-widest uppercase">
             veridd://mission-control
@@ -176,7 +176,7 @@ export const MissionTerminal: React.FC = () => {
 
         {/* Terminal content — grows to fill space */}
         <div
-          className="px-2.5 py-1 font-mono overflow-hidden"
+          className="px-5 py-1 font-mono overflow-hidden"
           style={{ minHeight: `${maxLines * LINE_HEIGHT + 2}px`, maxHeight: `${maxLines * LINE_HEIGHT + 6}px` }}
         >
           <span
