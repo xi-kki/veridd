@@ -37,7 +37,7 @@
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/globe.svg" width="16" height="16" align="center" /> **Live Demo** | [veridd.vercel.app](https://veridd.vercel.app) |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/file-text.svg" width="16" height="16" align="center" /> **Contract (Verified)** | [`0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88`](https://chainscan-galileo.0g.ai/address/0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88) |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/image.svg" width="16" height="16" align="center" /> **Screenshot** | [View](https://files.catbox.moe/tflwui.PNG) |
-| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/video.svg" width="16" height="16" align="center" /> **Demo Video** | [Watch on YouTube](https://youtu.be/DAVieIrUgts) |
+| <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/video.svg" width="16" height="16" align="center" /> **Demo Video** | [Watch on YouTube](https://youtu.be/K54lAwXGzTQ) |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/folder-git-2.svg" width="16" height="16" align="center" /> **Source Code** | [github.com/xi-kki/veridd](https://github.com/xi-kki/veridd) |
 | <img src="https://cdn.jsdelivr.net/npm/lucide-static@0.454.0/icons/link.svg" width="16" height="16" align="center" /> **Network** | 0G Galileo Testnet (Chain ID: 16602) |
 
@@ -246,7 +246,7 @@ function getAgentScore(uint256 agentId) external view returns (uint256 averageSc
 - [x] Contract deployed to 0G Galileo Testnet
 - [x] 4 0G products used (Chain, Storage, Compute, Agentic ID)
 - [x] Live frontend at [veridd.vercel.app](https://veridd.vercel.app)
-- [x] **Demo video** — [Watch on YouTube](https://youtu.be/DAVieIrUgts)
+- [x] **Demo video** — [Watch on YouTube](https://youtu.be/K54lAwXGzTQ)
 - [x] Public GitHub repo
 - [x] Screenshots submitted
 - [x] Open source (MIT License)
