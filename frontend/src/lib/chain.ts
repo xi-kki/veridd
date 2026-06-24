@@ -56,6 +56,8 @@ const LOCAL_NETWORK = {
 const LOCAL_CONTRACT_PREFIX = '0x5FbDB2315678afecb';
 
 const TX_TIMEOUT = 120_000; // 2 minutes
+const RECEIPT_RETRY_DELAY = 2000; // 2s between receipt retries
+const MAX_RECEIPT_RETRIES = 15;   // 30s total retry window
 
 export class VeriddChain {
   private provider: ethers.BrowserProvider | null = null;
@@ -131,6 +133,37 @@ export class VeriddChain {
     }
   }
 
+  /** Retry getting a tx receipt with backoff (handles testnet RPC lag) */
+  private async waitForReceipt(tx: ethers.ContractTransactionResponse): Promise<ethers.ContractTransactionReceipt | null> {
+    // First try normal wait with timeout
+    try {
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), TX_TIMEOUT),
+        ),
+      ]);
+      return receipt;
+    } catch (err: any) {
+      // If wait fails (RPC lag), poll for the receipt
+      console.warn('[0G RPC] Initial wait failed, retrying receipt fetch...', err.message.slice(0, 80));
+    }
+
+    // Fallback: poll for receipt manually
+    if (!this.provider) return null;
+    for (let i = 0; i < MAX_RECEIPT_RETRIES; i++) {
+      await new Promise(r => setTimeout(r, RECEIPT_RETRY_DELAY));
+      try {
+        const receipt = await this.provider.getTransactionReceipt(tx.hash);
+        if (receipt) return receipt;
+        console.log(`[0G RPC] Receipt not ready yet (attempt ${i + 1}/${MAX_RECEIPT_RETRIES})...`);
+      } catch {
+        // Ignore individual poll errors
+      }
+    }
+    return null;
+  }
+
   /** Mint an Agentic ID + create agent profile */
   async createAgent(name: string, description: string, metadataURI: string): Promise<bigint> {
     if (!this.contract) throw new Error('Not connected. Connect your wallet first.');
@@ -139,29 +172,34 @@ export class VeriddChain {
     if (description.length > 500) throw new Error('Description too long (max 500 characters)');
 
     const tx = await this.contract.createAgent(name, description, metadataURI);
+    
+    const txHash = tx.hash;
+    console.log(`[0G Chain] Tx sent: ${txHash}`);
 
-    // Wait with timeout
-    const receipt = await Promise.race([
-      tx.wait(),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('Transaction timed out. Check the explorer.')),
-          TX_TIMEOUT,
-        ),
-      ),
-    ]);
+    const receipt = await this.waitForReceipt(tx);
 
-    // Parse the AgentCreated event
-    for (const log of receipt.logs) {
-      try {
-        const parsed = this.contract.interface.parseLog(log);
-        if (parsed?.name === 'AgentCreated') {
-          return parsed.args.agentId;
+    if (receipt) {
+      // Parse the AgentCreated event
+      for (const log of receipt.logs) {
+        try {
+          const parsed = this.contract.interface.parseLog(log);
+          if (parsed?.name === 'AgentCreated') {
+            return parsed.args.agentId;
+          }
+        } catch {
+          /* skip unrelated logs */
         }
-      } catch {
-        /* skip unrelated logs */
       }
     }
+
+    // If we couldn't get the receipt but tx was sent, find the agent by querying the chain
+    console.warn('[0G Chain] No receipt found, searching for agent by owner...');
+    const agents = await this.getMyAgents();
+    if (agents.length > 0) {
+      // Return the latest agent (most recently created)
+      return agents[agents.length - 1];
+    }
+
     throw new Error('Agent created but could not read the ID. Check the explorer.');
   }
 
@@ -199,23 +237,28 @@ export class VeriddChain {
     if (!actionStorageRoot.trim()) throw new Error('Storage root required');
 
     const tx = await this.contract.submitAction(actionType, actionStorageRoot);
-    const receipt = await Promise.race([
-      tx.wait(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Transaction timed out')), TX_TIMEOUT),
-      ),
-    ]);
+    console.log(`[0G Chain] Action tx sent: ${tx.hash}`);
 
-    // Parse the ActionSubmitted event
-    for (const log of receipt.logs) {
-      try {
-        const parsed = this.contract.interface.parseLog(log);
-        if (parsed?.name === 'ActionSubmitted') {
-          return parsed.args.actionId;
-        }
-      } catch { /* skip */ }
+    const receipt = await this.waitForReceipt(tx);
+
+    if (receipt) {
+      for (const log of receipt.logs) {
+        try {
+          const parsed = this.contract.interface.parseLog(log);
+          if (parsed?.name === 'ActionSubmitted') {
+            return parsed.args.actionId;
+          }
+        } catch { /* skip */ }
+      }
     }
-    throw new Error('Action submitted but could not read the ID.');
+
+    console.warn('[0G Chain] No receipt for action, using fallback ID...');
+    try {
+      const nextId = await this.contract.nextActionId();
+      return nextId - 1n;
+    } catch {
+      throw new Error('Action submitted but could not read the ID.');
+    }
   }
 
   /** Get all action IDs for an agent */
@@ -264,15 +307,13 @@ export class VeriddChain {
     if (score < 1 || score > 5) throw new Error('Score must be between 1 and 5');
 
     const tx = await this.contract.submitReview(agentId, score, actionRoot, reviewRoot, summary);
-    return Promise.race([
-      tx.wait(),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('Transaction timed out. Check the explorer.')),
-          TX_TIMEOUT,
-        ),
-      ),
-    ]);
+    console.log(`[0G Chain] Review tx sent: ${tx.hash}`);
+
+    const receipt = await this.waitForReceipt(tx);
+    if (!receipt) {
+      console.warn('[0G Chain] No receipt for review, optimistically assuming success...');
+    }
+    return receipt;
   }
 
   /** Get all reviews for an agent */
