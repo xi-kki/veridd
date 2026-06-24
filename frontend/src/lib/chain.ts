@@ -65,6 +65,12 @@ export class VeriddChain {
   private contract: ethers.Contract | null = null;
   private _address: string | null = null;
 
+  // Gas limit override for 0G testnet RPC estimateGas flakiness
+  // The testnet RPC sometimes can't simulate complex interactions
+  // during gas estimation, causing false revert errors.
+  // Setting explicit gas limits bypasses the faulty estimateGas.
+  private static readonly TX_GAS_LIMIT = 500_000;
+
   constructor(private contractAddress: string) {}
 
   get address() {
@@ -171,7 +177,9 @@ export class VeriddChain {
     if (name.length > 64) throw new Error('Agent name too long (max 64 characters)');
     if (description.length > 500) throw new Error('Description too long (max 500 characters)');
 
-    const tx = await this.contract.createAgent(name, description, metadataURI);
+    const tx = await this.contract.createAgent(name, description, metadataURI, {
+      gasLimit: VeriddChain.TX_GAS_LIMIT,
+    });
     
     const txHash = tx.hash;
     console.log(`[0G Chain] Tx sent: ${txHash}`);
@@ -236,7 +244,9 @@ export class VeriddChain {
     if (!actionType.trim()) throw new Error('Action type required');
     if (!actionStorageRoot.trim()) throw new Error('Storage root required');
 
-    const tx = await this.contract.submitAction(actionType, actionStorageRoot);
+    const tx = await this.contract.submitAction(actionType, actionStorageRoot, {
+      gasLimit: VeriddChain.TX_GAS_LIMIT,
+    });
     console.log(`[0G Chain] Action tx sent: ${tx.hash}`);
 
     const receipt = await this.waitForReceipt(tx);
@@ -306,7 +316,9 @@ export class VeriddChain {
     if (!actionRoot || !reviewRoot) throw new Error('Missing storage proofs');
     if (score < 1 || score > 5) throw new Error('Score must be between 1 and 5');
 
-    const tx = await this.contract.submitReview(agentId, score, actionRoot, reviewRoot, summary);
+    const tx = await this.contract.submitReview(agentId, score, actionRoot, reviewRoot, summary, {
+      gasLimit: VeriddChain.TX_GAS_LIMIT,
+    });
     console.log(`[0G Chain] Review tx sent: ${tx.hash}`);
 
     const receipt = await this.waitForReceipt(tx);

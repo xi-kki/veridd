@@ -126,14 +126,17 @@ export const ReviewPanel: React.FC<Props> = ({ agentId, chain, onSubmitted, onCa
       const [actionResult, reviewResult] = await Promise.all([
         storage.storeAction({
           agentId: String(agentId),
+          agentName: agentName || `Agent #${agentId}`,
           actionType: action.type,
           input: action.input,
           output: action.output,
+          modelInfo: 'grok-2-latest',
           timestamp: Date.now(),
         }),
         storage.storeReview({
           agentId: String(agentId),
           reviewerId: chain.address || '',
+          reviewerName: agentName || `Agent #${agentId}`,
           score: review.score,
           reasoning: review.reasoning,
           evidenceHashes: [],

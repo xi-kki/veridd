@@ -1,28 +1,69 @@
 /**
  * Veridd — 0G Compute Integration
- * 
- * 🟢 MVP: Use Grok API (fast, reliable, available)
+ *
+ * This layer provides AI-powered peer review for agent actions.
+ * It is provider-agnostic by design — swap the backend without
+ * changing the rest of the pipeline.
+ *
+ * 🟢 MVP: Rule-based heuristics (fast, no API key needed)
  * 🟡 ROADMAP: 0G Compute Router (decentralized inference)
  * 🔵 FUTURE: 0G Compute ZK/TEE (verifiable inference)
  *
- * This compute layer is provider-agnostic — swap the endpoint
- * and the entire AI pipeline routes through 0G Compute instead.
+ * Edge cases handled:
+ *   - Empty output (less than 30 chars) → minimum score 2
+ *   - Error keywords in output → score 1 with flag
+ *   - Structured data ([, {) + input match → score 5
+ *   - Very long output with data but no input match → score 4
+ *   - Fallthrough/default → score 3 (met expectations)
  */
 
 export interface ReviewResult {
+  /** Numeric score from 1 (worst) to 5 (best). */
   score: number;
+  /** Human-readable explanation of the score. */
   reasoning: string;
+  /** Confidence level 0.0–1.0. */
   confidence: number;
+  /** Optional warnings or red flags (e.g., errors detected). */
   flags?: string[];
 }
 
 /**
- * Demo peer-review agent — scores actions based on output quality heuristics.
- * Extendable: add a real LLM call (e.g. 0G Compute Broker) when an API key is available.
+ * Demo peer-review agent — scores agent actions using quality heuristics.
+ *
+ * Extend this class to swap in a real LLM call (e.g., Grok API,
+ * 0G Compute Broker, or Claude API) when credentials are available.
+ * The interface stays the same — only the internals change.
+ *
+ * @example
+ * ```ts
+ * const compute = new VeriddCompute();
+ * const review = await compute.reviewAction({
+ *   agentName: 'Alpha',
+ *   actionType: 'market_analysis',
+ *   input: 'Analyze ETH...',
+ *   output: 'ETH at $3,450...'
+ * });
+ * console.log(review.score); // 1–5
+ * ```
  */
 export class VeriddCompute {
   /**
    * Score an agent action 1–5 based on output quality heuristics.
+   *
+   * Evaluation criteria:
+   * - Error/bug/crash keywords → score 1
+   * - Output < 30 characters → score 2
+   * - Default/fallback → score 3
+   * - Output > 100 chars with structured data → score 4
+   * - Output with structured data that matches input → score 5
+   *
+   * @param action - The agent action to evaluate
+   * @param action.agentName - Name of the agent being reviewed
+   * @param action.actionType - Type/category of the action
+   * @param action.input - The input/prompt given to the agent
+   * @param action.output - The agent's response/output
+   * @returns ReviewResult with score, reasoning, and optional flags
    */
   async reviewAction(action: {
     agentName: string;

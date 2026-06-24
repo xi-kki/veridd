@@ -1,0 +1,85 @@
+# 🔗 Pre-Commit Hooks — Runs linters, formatters, and security checks
+# before every commit. Install: pip install pre-commit && pre-commit install
+#
+# Docs: https://pre-commit.com
+# Hooks registry: https://pre-commit.com/hooks.html
+
+repos:
+  # ── Universal hooks (all projects) ──
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: detect-private-keys
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: forbid-submodules
+
+  # ── JS/TS linting via ESLint ──
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.57.1
+    hooks:
+      - id: eslint
+        types_or: [javascript, jsx, typescript, tsx]
+        args: [--fix, --max-warnings=0]
+        additional_dependencies:
+          - eslint@^8.57.1
+          - eslint-config-prettier@^9.1.0
+          - @typescript-eslint/eslint-plugin@^7.0.0
+          - @typescript-eslint/parser@^7.0.0
+          - eslint-plugin-react@^7.34.0
+          - eslint-plugin-react-hooks@^4.6.0
+
+  # ── JS/TS formatting via Prettier ──
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, typescript, tsx, css, json, markdown, yaml]
+        args: [--write]
+
+  # ── Secret scanning via Gitleaks ──
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
+  # ── Shell scripts linting ──
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--severity=warning]
+        files: \.sh$
+
+# ── Exclude generated directories from all hooks ──
+exclude: |
+  (?x)^(
+    node_modules/|
+    frontend/node_modules/|
+    runner/node_modules/|
+    contracts/node_modules/|
+    contracts/artifacts/|
+    contracts/cache/|
+    contracts/typechain-types/|
+    frontend/dist/|
+    frontend/dev/|
+    .git/|
+    \.netlify/|
+    package-lock\.json|
+    frontend/package-lock\.json|
+    runner/package-lock\.json|
+    contracts/package-lock\.json
+  )

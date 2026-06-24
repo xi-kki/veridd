@@ -1,0 +1,89 @@
+# 🤖 Dependabot — Automated Dependency Updates
+# Keeps npm, Docker, and GitHub Actions dependencies up-to-date
+# with auto-PRs for security patches and version bumps.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # ── Root (Husky, ESLint, Prettier, Commitlint, Lint-Staged) ──
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Africa/Lagos"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "root"
+    groups:
+      dev-deps:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "@commitlint/*"
+          - "husky"
+          - "lint-staged"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ── Frontend (React, Vite, Tailwind, ethers.js) ──
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Africa/Lagos"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      react-core:
+        patterns:
+          - "react*"
+          - "@types/react*"
+        update-types:
+          - "minor"
+          - "patch"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "tailwindcss"
+          - "postcss"
+          - "autoprefixer"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Lock ethers to v6 for contract compatibility
+      - dependency-name: "ethers"
+        versions: [">=7.0.0"]
+
+  # ── Runner (Agent bot, 0G SDKs) ──
+  - package-ecosystem: "npm"
+    directory: "/runner"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Africa/Lagos"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "runner"
+
+  # ── GitHub Actions (CI/CD workflows) ──
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "ci"
+      - "dependencies"

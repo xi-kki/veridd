@@ -191,7 +191,14 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
 
       onScoreUpdate();
     } catch (err: any) {
-      addLog('x-circle', `Error: ${err.message.slice(0, 100)}`, 'text-red-400');
+      // Strip wallet extension noise (e.g. "Steering: Error: execution reverted...")
+      const raw = err.message || String(err);
+      const clean = raw
+        .replace(/^\w+Error: /, '')           // Remove "Steering Error: " prefix
+        .replace(/^Error: /, '')                // Remove leading "Error: "
+        .replace(/\(action="estimateGas".*\)/, '(gas estimation failed)')  // Simplify ethers noise
+        .slice(0, 120);
+      addLog('x-circle', `Error: ${clean}`, 'text-red-400');
     }
   }, [chain, agents, onScoreUpdate, addLog, demoMode]);
 

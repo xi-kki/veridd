@@ -1,0 +1,71 @@
+# 🕵️ Gitleaks Configuration — Custom secret scanning rules
+#
+# Detects hardcoded credentials, API keys, tokens, and secrets
+# in Git history and filesystem. Run: gitleaks detect --source=. -v
+#
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+
+title = "VERIDD Gitleaks Config"
+
+# ── Allowlist ─────────────────────────────────────────────────────
+[allowlist]
+description = "Known safe patterns and test fixtures"
+regexes = [
+    "0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88",  # Public testnet contract
+    "0x5FbDB2315678afecb",                            # Hardhat local prefix
+    "example-token",
+    "test-key-123",
+    "your-private-key-here",
+    "YOUR_GROK_KEY_HERE",
+    "YOUR_ANTHROPIC_KEY_HERE",
+    "placeholder",
+    "sk-proj-",  # OpenAI placeholder patterns in comments
+]
+paths = [
+    "**/test/**",
+    "**/tests/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/node_modules/**",
+    "**/typechain-types/**",
+    "**/artifacts/**",
+    "**/cache/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/dev/**",
+]
+commits = [
+    # Allow initial commits with test patterns
+]
+
+# ── Custom rules ──────────────────────────────────────────────────
+
+[[rules]]
+id = "veridd-private-key"
+description = "VERIDD Private Key (Ethereum / 0G)"
+regex = '''(?i)(private\s*key|PRIVATE_KEY|secret\s*phrase).*[0-9a-fA-F]{64}'''
+tags = ["veridd", "ethereum", "key"]
+
+[[rules]]
+id = "veridd-grok-api-key"
+description = "xAI Grok API Key"
+regex = '''(?i)(GROK_KEY|grok[_-]?key|GROK[_-]?API[_-]?KEY)\s*[:=]\s*["']?[a-zA-Z0-9_\-]{20,}["']?'''
+tags = ["veridd", "grok", "api-key"]
+
+[[rules]]
+id = "veridd-anthropic-key"
+description = "Anthropic Claude API Key"
+regex = '''(?i)(ANTHROPIC_KEY|anthropic[_-]?key|ANTHROPIC[_-]?API[_-]?KEY)\s*[:=]\s*["']?sk-ant-[a-zA-Z0-9_\-]{20,}["']?'''
+tags = ["veridd", "anthropic", "api-key"]
+
+[[rules]]
+id = "veridd-vercel-token"
+description = "Vercel Deployment Token"
+regex = '''(?i)(VERCEL_TOKEN|vercel[_-]?token|VCP_)[a-zA-Z0-9_\-]{30,}'''
+tags = ["veridd", "vercel", "token"]
+
+[[rules]]
+id = "veridd-env-vars"
+description = "Generic VERIDD env secrets"
+regex = '''(?i)^(PRIVATE_KEY|MNEMONIC|INFURA_KEY|ALCHEMY_KEY|ETHERSCAN_KEY)=["']?[a-zA-Z0-9_\-]{20,}'''
+tags = ["veridd", "env"]

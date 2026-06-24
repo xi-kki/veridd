@@ -3,25 +3,54 @@
   "version": "1.0.0",
   "private": true,
   "description": "VERIDD — True Identity for AI Agents. Built on 0G.",
+  "keywords": [
+    "veridd",
+    "0g",
+    "ai-agents",
+    "reputation",
+    "blockchain",
+    "identity"
+  ],
+  "homepage": "https://github.com/xi-kki/veridd#readme",
+  "bugs": {
+    "url": "https://github.com/xi-kki/veridd/issues"
+  },
+  "license": "MIT",
+  "author": "VERIDD Team",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xi-kki/veridd.git"
+  },
   "scripts": {
-    "install:all": "cd contracts && npm install && cd ../frontend && npm install",
+    "install:all": "npm install && cd contracts && npm install && cd ../frontend && npm install && cd ../runner && npm install",
     "compile": "cd contracts && npx hardhat compile",
     "test": "cd contracts && npx hardhat test",
+    "test:watch": "cd contracts && npx hardhat test --watch",
+    "test:coverage": "cd contracts && npx hardhat coverage",
     "deploy": "cd contracts && npx hardhat run scripts/deploy.ts --network zg",
+    "deploy:local": "cd contracts && npx hardhat run scripts/deploy.ts --network localhost",
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
     "lint": "eslint . --ext .js,.ts,.jsx,.tsx --ignore-pattern node_modules --ignore-pattern dist",
     "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix --ignore-pattern node_modules --ignore-pattern dist",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,css}\" --ignore-path .gitignore",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,css}\" --ignore-path .gitignore",
-    "check-all": "npm run lint && npm run format:check && npm run test && npm run build",
+    "typecheck": "cd frontend && npx tsc --noEmit",
+    "secrets:scan": "gitleaks detect --source=. -v",
+    "check-all": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
+    "quality:full": "npm run lint:fix && npm run format && npm run typecheck && npm run test && npm run build",
     "prepare": "husky || true"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "prettier": "^3.8.4"
@@ -33,6 +62,13 @@
     ],
     "*.{json,md,css}": [
       "prettier --write"
+    ],
+    "*.sh": [
+      "shellcheck --severity=warning"
     ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
