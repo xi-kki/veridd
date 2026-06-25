@@ -28,7 +28,7 @@ describe('VeriddChain', () => {
   let chain: VeriddChain;
 
   beforeEach(() => {
-    chain = new VeriddChain('0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88');
+    chain = new VeriddChain('0x70c88e1A57917409fdA2935F16A38deb4aEF5Bfa');
   });
 
   describe('constructor', () => {

@@ -20,7 +20,7 @@ const https = require('https');
 // ───── Config ───────────────────────────────────────────────────────
 
 const RPC = process.env.RPC_URL || 'https://evmrpc-testnet.0g.ai';
-const CONTRACT = process.env.CONTRACT || '0x2F00a196a5E9A74C7eaf471AA0D6f9614686DF88';
+const CONTRACT = process.env.CONTRACT || '0x70c88e1A57917409fdA2935F16A38deb4aEF5Bfa';
 const STORAGE_INDEXER = 'https://indexer-storage-testnet-turbo.0g.ai';
 
 const CONTRACT_ABI = [
