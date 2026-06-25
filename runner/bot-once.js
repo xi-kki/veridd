@@ -215,7 +215,7 @@ async function main() {
     const metadataURI = storageResult.real ? `0g://${storageResult.root}` : `veridd://agents/${name.toLowerCase().replace(/\s+/g, '-')}`;
 
     const tx = await contract.createAgent(name, description, metadataURI, {
-      gasLimit: 300000
+      gasLimit: 500000
     });
     const receipt = await tx.wait();
     for (const logEntry of receipt.logs) {
