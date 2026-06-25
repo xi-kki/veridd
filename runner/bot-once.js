@@ -259,7 +259,7 @@ async function main() {
 
   log('⛓️', `Submitting to 0G Chain (root: ${actionStorage.root.slice(0, 16)}...)`);
   const tx = await contract.submitAction(actionType, actionStorage.root, {
-    gasLimit: 300000
+    gasLimit: 500000
   });
   log('⏳', `Tx sent: ${tx.hash.slice(0, 18)}..., waiting for receipt...`);
   const receipt = await tx.wait();
@@ -287,7 +287,7 @@ async function main() {
       const reviewStorage = await storeOn0G(reviewData, `review_${aid}_${Date.now()}.json`);
 
       await contract.submitReview(agentId, score, actionData2.actionStorageRoot, reviewStorage.root, reasoning.slice(0, 100), {
-        gasLimit: 300000
+        gasLimit: 500000
       });
       log('✅', `Review #${aid}: ${score}/5`);
     }

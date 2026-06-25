@@ -253,7 +253,7 @@ async function createOrGetAgent(wallet, contract, name) {
     : `veridd://agents/${name.toLowerCase().replace(/\s+/g, '-')}`;
 
   const tx = await contract.createAgent(name, description, metadataURI, {
-    gasLimit: 300000
+    gasLimit: 500000
   });
   const receipt = await tx.wait();
 
@@ -329,7 +329,7 @@ Respond with a JSON object:
   // Step 3: Submit Merkle root to 0G Chain
   log('⛓️', `Submitting to 0G Chain (Galileo)...`);
   const tx = await contract.submitAction(actionType, storageResult.root, {
-    gasLimit: 300000
+    gasLimit: 500000
   });
   const receipt = await tx.wait();
   log('✅', `Action submitted | tx: ${tx.hash.slice(0, 18)}... | gas: ${receipt.gasUsed.toString()}`);
@@ -414,7 +414,7 @@ Scoring guide:
           actionData.actionStorageRoot,
           reviewStorage.root,
           reasoning.slice(0, 100),
-          { gasLimit: 300000 }
+          { gasLimit: 500000 }
         );
         await tx.wait();
         log('✅', `Review submitted for action #${aid} | score: ${score}/5`);
