@@ -25,6 +25,8 @@ function App() {
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [allAgents, setAllAgents] = useState<Agent[]>([]);
+  const [globalStats, setGlobalStats] = useState({ agents: 0, actions: 0, reviews: 0 });
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<number | null>(null);
@@ -96,6 +98,39 @@ function App() {
     },
     [chain, address],
   );
+
+  /** Load ALL agents system-wide (not just the connected wallet) */
+  const loadAllAgents = useCallback(async () => {
+    if (!chain) return;
+    try {
+      const totalAgents = await chain.getTotalAgents();
+      const totalActions = await chain.getTotalActions();
+      const agentList: Agent[] = [];
+      for (let i = 0; i < Number(totalAgents); i++) {
+        try {
+          const agent = await chain.getAgent(i);
+          if (!agent || !agent.exists) continue;
+          const score = await chain.getReputation(i);
+          agentList.push({
+            agentId: i,
+            name: agent.name,
+            description: agent.description,
+            veriddScore: score,
+            isOwner: false,
+          });
+        } catch {}
+      }
+      setAllAgents(agentList);
+      setGlobalStats({ agents: Number(totalAgents), actions: Number(totalActions), reviews: 0 });
+    } catch {}
+  }, [chain]);
+
+  // Initial load of all agents (runs once on mount)
+  useEffect(() => {
+    loadAllAgents();
+    const interval = setInterval(() => loadAllAgents(), 15000);
+    return () => clearInterval(interval);
+  }, [loadAllAgents]);
 
   useEffect(() => {
     if (address && chain) {

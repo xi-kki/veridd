@@ -70,6 +70,7 @@ export class VeriddChain {
   // during gas estimation, causing false revert errors.
   // Setting explicit gas limits bypasses the faulty estimateGas.
   private static readonly TX_GAS_LIMIT = 500_000;
+  private static readonly TX_GAS_PRICE = 5_000_000_000n; // 5 gwei explicit gas price
 
   constructor(private contractAddress: string) {}
 
@@ -226,6 +227,18 @@ export class VeriddChain {
     }
   }
 
+  /** Total agents registered on chain */
+  async getTotalAgents(): Promise<bigint> {
+    if (!this.contract) throw new Error('Not connected');
+    return await this.contract.nextAgentId();
+  }
+
+  /** Total actions submitted on chain */
+  async getTotalActions(): Promise<bigint> {
+    if (!this.contract) throw new Error('Not connected');
+    return await this.contract.nextActionId();
+  }
+
   /** Get an agent's VERIDD score */
   async getReputation(agentId: number | bigint): Promise<{ average: number; total: number }> {
     if (!this.contract) throw new Error('Not connected');
@@ -249,6 +262,7 @@ export class VeriddChain {
 
     const tx = await this.contract.submitAction(actionType, actionStorageRoot, {
       gasLimit: VeriddChain.TX_GAS_LIMIT,
+      gasPrice: VeriddChain.TX_GAS_PRICE,
     });
     console.log(`[0G Chain] Action tx sent: ${tx.hash}`);
 
@@ -321,6 +335,7 @@ export class VeriddChain {
 
     const tx = await this.contract.submitReview(agentId, score, actionRoot, reviewRoot, summary, {
       gasLimit: VeriddChain.TX_GAS_LIMIT,
+      gasPrice: VeriddChain.TX_GAS_PRICE,
     });
     console.log(`[0G Chain] Review tx sent: ${tx.hash}`);
 
