@@ -3,7 +3,6 @@ import { AgentCard } from './components/AgentCard';
 import { CreateAgent } from './components/CreateAgent';
 import { ReviewPanel } from './components/ReviewPanel';
 import { FloatingIdCard } from './components/FloatingIdCard';
-import { AutonomousDemo } from './components/AutonomousDemo';
 import { LiveNetworkFeed } from './components/LiveNetworkFeed';
 import { VeriddChain } from './lib/chain';
 
@@ -348,6 +347,20 @@ function App() {
                 />
               )}
 
+              {/* ═══ ALL AGENTS (system-wide) ═══ */}
+              {allAgents.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-xs font-medium text-gray-500 mb-4 uppercase tracking-widest">
+                    All Agents on Chain ({allAgents.length})
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {allAgents.map((a) => (
+                      <AgentCard key={a.agentId} {...a} onReview={(id) => setReviewTarget(id)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Loading */}
               {loading ? (
                 <div className="text-center py-16">
@@ -402,44 +415,24 @@ function App() {
                 </div>
               )}
 
-              {/* ═══ SECTION DIVIDER ═══ */}
-              {chain && agents.length >= 2 && (
+              {/* ═══ LIVE NETWORK FEED ═══ */}
+              {chain && allAgents.length >= 1 && (
                 <>
-                  {/* Autonomous Agent Network — auto-starts when 2+ agents exist */}
                   <div className="mt-16 mb-4 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-gradient-to-r from-violet-500/0 via-violet-500/20 to-transparent" />
-                    <span className="text-[10px] font-mono text-violet-500/40 tracking-[0.2em] uppercase">
-                      Autonomous Agent Network
+                    <div className="h-px flex-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/20 to-transparent" />
+                    <span className="text-[10px] font-mono text-emerald-500/40 tracking-[0.2em] uppercase">
+                      Live Network Activity
                     </span>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-violet-500/20 to-violet-500/0" />
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-emerald-500/0" />
                   </div>
-                  <AutonomousDemo
-                    chain={chain}
-                    agents={agents}
-                    onScoreUpdate={() => loadAgents(chain)}
-                    demoMode={true}
-                  />
+                  <div className="mb-8">
+                    <LiveNetworkFeed
+                      contractAddress={CONTRACT_ADDRESS}
+                      rpcUrl="https://evmrpc-testnet.0g.ai"
+                      demoMode={false}
+                    />
+                  </div>
                 </>
-              )}
-
-              {/* Live Network Feed — real-time on-chain activity */}
-              {chain && agents.length >= 2 && (
-                <div className="mt-16 mb-4 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/20 to-transparent" />
-                  <span className="text-[10px] font-mono text-emerald-500/40 tracking-[0.2em] uppercase">
-                    Live Network Activity
-                  </span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-emerald-500/0" />
-                </div>
-              )}
-              {chain && agents.length >= 2 && (
-                <div className="mb-8">
-                  <LiveNetworkFeed
-                    contractAddress={CONTRACT_ADDRESS}
-                    rpcUrl="https://evmrpc-testnet.0g.ai"
-                    demoMode={true}
-                  />
-                </div>
               )}
             </div>
 

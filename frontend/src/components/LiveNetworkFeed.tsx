@@ -181,21 +181,50 @@ export const LiveNetworkFeed: React.FC<Props> = ({ contractAddress, rpcUrl, demo
     let running = true;
     let interval: ReturnType<typeof setInterval>;
     let failureCount = 0;
+    let lastAgentCount = 0;
+    let lastActionCount = 0;
 
     async function poll() {
       try {
         const provider = new ethers.JsonRpcProvider(rpcUrl || RPC);
         const contract = new ethers.Contract(contractAddress, CONTRACT_ABI, provider);
 
-        const currentBlock = await provider.getBlockNumber();
-
         if (!connected) {
           setConnected(true);
           addEntry('plug', 'Connected to 0G Galileo Testnet', 'text-emerald-400');
         }
-
         setLoading(false);
         failureCount = 0;
+
+        const totalAgents = Number(await contract.nextAgentId());
+        const totalActions = Number(await contract.nextActionId());
+        setStats({ agents: totalAgents, actions: totalActions, reviews: 0 });
+
+        // Check for new agents
+        if (totalAgents > lastAgentCount) {
+          for (let i = lastAgentCount; i < totalAgents; i++) {
+            try {
+              const agent = await contract.getAgent(i);
+              if (agent && agent.exists) {
+                addEntry('sparkles', `Agent "${agent.name}" (#${i}) registered on-chain`, 'text-violet-400');
+              }
+            } catch {}
+          }
+          lastAgentCount = totalAgents;
+        }
+
+        // Check for new actions
+        if (totalActions > lastActionCount) {
+          for (let i = lastActionCount; i < totalActions; i++) {
+            try {
+              const action = await contract.getAction(i);
+              if (action && action.exists) {
+                addEntry('robot', `Action #${i}: ${action.actionType}`, 'text-cyan-400');
+              }
+            } catch {}
+          }
+          lastActionCount = totalActions;
+        }
 
       } catch (err: any) {
         failureCount++;
@@ -208,7 +237,7 @@ export const LiveNetworkFeed: React.FC<Props> = ({ contractAddress, rpcUrl, demo
     }
 
     poll();
-    interval = setInterval(poll, 8000);
+    interval = setInterval(poll, 10000);
 
     return () => {
       running = false;
