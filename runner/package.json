@@ -1,17 +1,16 @@
 {
-  "name": "veridd-agent-runner",
+  "name": "veridd-bot",
   "version": "1.0.0",
-  "private": true,
-  "description": "VERIDD — Agent runner with real 0G Storage + 0G Compute integration",
-  "main": "agent-runner.js",
+  "description": "VERIDD Autonomous Agent Bot — powered by 0G",
+  "main": "agent-bot.js",
   "scripts": {
-    "start": "node agent-runner.js",
-    "fund": "node agent-runner.js --fund-only"
+    "start": "node agent-bot.js",
+    "bot": "node agent-bot.js"
   },
   "dependencies": {
-    "@0gfoundation/0g-compute-ts-sdk": "^0.8.4",
-    "@0gfoundation/0g-storage-ts-sdk": "^1.2.10",
-    "ethers": "^6.13.0",
-    "dotenv": "^16.4.0"
+    "ethers": "^6.13.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

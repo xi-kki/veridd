@@ -11,7 +11,6 @@ const HOVER_THRESHOLD = 4;
 const BOUNDS = { xMin: 12, xMax: 88, yMin: 12, yMax: 38 };
 const CENTER = { x: 50, y: 42 };
 const REPEL_STRENGTH = 0.45; // Strong dodge — card really runs away
-const APPROACH_SPEED = 0.015; // Eager pull toward cursor
 
 /**
  * Floating VERIDD Identity Card — superhero physics, 8-hover mechanic,
@@ -182,13 +181,8 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
           setCaught(true);
           attractedRef.current = true;
           setBtnBlink(true);
-        } else if (n >= 2) {
-          // Phase 2: Card starts trusting — drifts toward cursor
-          attractedRef.current = true;
-          setBtnBlink(true);
-          setTimeout(() => setBtnBlink(false), 1000);
         } else {
-          // Phase 1: Card is shy — repels from cursor
+          // Dodge on every hover until the 3rd (which catches)
           attractedRef.current = false;
         }
       }
@@ -222,13 +216,11 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
     setMouseOnScreen(false);
   }, [caught]);
 
-  // ───── Physics loop — Phase 1 (run) → Phase 2 (approach) → Phase 3 (center) ──
+  // ───── Physics loop — Phase 1 (dodge) → Phase 2 (caught) ──
   //
-  // Phase 1 (streak 0-4): Card repels from cursor like "can't catch me!"
-  //   → Cursor gets close, card pushes away playfully
-  // Phase 2 (streak 5-7): Card drifts toward cursor — "okay fine..."
-  //   → Gentle magnetic pull, 3 approaches, builds trust
-  // Phase 3 (caught):      Card returns to center, button activates
+  // Phase 1 (streak 0-2): Card repels from cursor like "can't catch me!"
+  //   → 1st hover: dodge. 2nd hover: dodge. 3rd hover: caught!
+  // Phase 2 (caught):      Card returns to center, button activates
   //   → User can finally click Connect Wallet
   //
   // Rocket orientation: The rocket (cursor) points at the card like a
@@ -259,27 +251,18 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
       const streak = hoverStreakRef.current;
 
       if (caught) {
-        // ── Phase 3: Caught! Return to center smoothly ──
+        // ── Phase 2: Caught! Return to center smoothly ──
         velRef.current.x += (CENTER.x - cx) * 0.015;
         velRef.current.y += (CENTER.y - cy) * 0.015;
       } else if (mouseActive) {
-        if (streak < 2) {
-          // ── Phase 1: "Can't catch me!" — STRONG REPEL ──
-          if (dist < 45 && dist > 0.5) {
-            const repel = ((45 - dist) / 45) * REPEL_STRENGTH;
-            velRef.current.x += -(dx / dist) * repel;
-            velRef.current.y += -(dy / dist) * repel * 0.6;
-          }
-          velRef.current.x += (CENTER.x - cx) * 0.0008;
-          velRef.current.y += (CENTER.y - cy) * 0.0008;
-        } else {
-          // ── Phase 2: "Okay fine..." — STRONG APPROACH ──
-          const pull = Math.min(dist * APPROACH_SPEED, 0.3);
-          velRef.current.x += (dx / (dist || 1)) * pull;
-          velRef.current.y += (dy / (dist || 1)) * pull * 0.7;
-          velRef.current.x += (CENTER.x - cx) * 0.0005;
-          velRef.current.y += (CENTER.y - cy) * 0.0005;
+        // ── Phase 1: "Can't catch me!" — STRONG REPEL every time until caught ──
+        if (dist < 45 && dist > 0.5) {
+          const repel = ((45 - dist) / 45) * REPEL_STRENGTH;
+          velRef.current.x += -(dx / dist) * repel;
+          velRef.current.y += -(dy / dist) * repel * 0.6;
         }
+        velRef.current.x += (CENTER.x - cx) * 0.0008;
+        velRef.current.y += (CENTER.y - cy) * 0.0008;
       } else {
         // No mouse — drift back to center
         velRef.current.x += (CENTER.x - cx) * 0.005;

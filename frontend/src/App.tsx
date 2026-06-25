@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AgentCard } from './components/AgentCard';
 import { CreateAgent } from './components/CreateAgent';
 import { ReviewPanel } from './components/ReviewPanel';
@@ -28,6 +28,28 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState<{message: string; type: 'success' | 'error'} | null>(null);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Filter agents by search term
+  const filteredAgents = useMemo(
+    () =>
+      searchTerm.trim()
+        ? agents.filter(
+            (a) =>
+              a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              String(a.agentId).includes(searchTerm),
+          )
+        : agents,
+    [agents, searchTerm],
+  );
 
   const handleConnect = useCallback(async () => {
     try {
@@ -82,7 +104,7 @@ function App() {
   }, [address, chain, loadAgents]);
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-gray-950 overflow-x-hidden">
       {/* ═══ NAV ═══ */}
       <nav className="border-b border-gray-800 bg-gray-950/90 backdrop-blur-md sticky top-0 z-40">
         {/* Animated gradient underline */}
@@ -245,9 +267,27 @@ function App() {
                     className="w-full bg-gray-900/60 border border-gray-700/50 rounded-lg pl-10 pr-4 py-2 
                     text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-violet-500/50 
                     focus:ring-1 focus:ring-violet-500/20 transition-all"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
+
+              {/* Toast notification */}
+              {toast && (
+                <div className="mb-4 animate-slide-up">
+                  <div className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm ${
+                    toast.type === 'success' 
+                      ? 'bg-emerald-900/20 border-emerald-700/30 text-emerald-300' 
+                      : 'bg-red-900/20 border-red-700/30 text-red-300'
+                  }`}>
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={toast.type === 'success' ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'}/>
+                    </svg>
+                    <span>{toast.message}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Modals */}
               {showCreate && chain && (
@@ -256,6 +296,7 @@ function App() {
                   onCreated={() => {
                     setShowCreate(false);
                     loadAgents(chain);
+                    setToast({ message: 'Agent registered on 0G Chain!', type: 'success' });
                   }}
                   onCancel={() => setShowCreate(false)}
                 />
@@ -282,13 +323,18 @@ function App() {
                 /* Agent Grid */
                 <div>
                   <h2 className="text-xs font-medium text-gray-500 mb-4 uppercase tracking-widest">
-                    Your Agents ({agents.length})
+                    Your Agents ({filteredAgents.length})
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {agents.map((a) => (
+                    {filteredAgents.map((a) => (
                       <AgentCard key={a.agentId} {...a} onReview={(id) => setReviewTarget(id)} />
                     ))}
                   </div>
+                  {searchTerm.trim() && filteredAgents.length === 0 && (
+                    <div className="text-center py-10 text-gray-500">
+                      <p className="text-sm">No agents match &quot;{searchTerm}&quot;</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 /* Empty State */

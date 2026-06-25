@@ -430,17 +430,21 @@ Scoring guide:
 async function main() {
   const args = process.argv.slice(2);
   const pkIndex = args.findIndex((a) => !a.startsWith('--'));
-  const privateKey = pkIndex >= 0 ? args[pkIndex] : null;
+  const privateKey = pkIndex >= 0 ? args[pkIndex] : process.env.PRIVATE_KEY || null;
   const name =
-    args.includes('--name')
+    process.env.NAME ||
+    (args.includes('--name')
       ? args[args.indexOf('--name') + 1]
-      : `Agent-${Math.random().toString(36).slice(2, 6)}`;
+      : `Agent-${Math.random().toString(36).slice(2, 6)}`);
   const grokKey =
     args.includes('--grok-key')
       ? args[args.indexOf('--grok-key') + 1]
       : process.env.GROK_KEY;
 
-  if (!privateKey) {
+  // Read private key from environment or args
+  const pk = privateKey || process.env.PRIVATE_KEY;
+
+  if (!pk) {
     console.error('');
     console.error('VERIDD Agent Bot — "0G-powered agent infrastructure"');
     console.error('');
@@ -459,8 +463,13 @@ async function main() {
   // Set Grok key from arg
   if (grokKey) process.env.GROK_KEY = grokKey;
 
+  if (!pk) {
+    log('❌', 'No private key provided. Set PRIVATE_KEY env or pass as argument.');
+    process.exit(1);
+  }
+
   const provider = new ethers.JsonRpcProvider(RPC);
-  const wallet = new ethers.Wallet(privateKey, provider);
+  const wallet = new ethers.Wallet(pk, provider);
   const contract = new ethers.Contract(CONTRACT, CONTRACT_ABI, wallet);
 
   const balance = await provider.getBalance(wallet.address);

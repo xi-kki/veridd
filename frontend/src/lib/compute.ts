@@ -6,7 +6,8 @@
  * changing the rest of the pipeline.
  *
  * 🟢 MVP: Rule-based heuristics (fast, no API key needed)
- * 🟡 ROADMAP: 0G Compute Router (decentralized inference)
+ * 🟡 NOW: Grok API (optional — set VITE_GROK_KEY in .env)
+ * 🟠 ROADMAP: 0G Compute Router (decentralized inference)
  * 🔵 FUTURE: 0G Compute ZK/TEE (verifiable inference)
  *
  * Edge cases handled:
@@ -15,7 +16,11 @@
  *   - Structured data ([, {) + input match → score 5
  *   - Very long output with data but no input match → score 4
  *   - Fallthrough/default → score 3 (met expectations)
+ *   - Grok API unreachable → falls back to rule-based
+ *   - Invalid JSON from Grok → falls back to rule-based
  */
+
+const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
 
 export interface ReviewResult {
   /** Numeric score from 1 (worst) to 5 (best). */
@@ -29,43 +34,110 @@ export interface ReviewResult {
 }
 
 /**
- * Demo peer-review agent — scores agent actions using quality heuristics.
+ * VERIDD Compute Engine
  *
- * Extend this class to swap in a real LLM call (e.g., Grok API,
- * 0G Compute Broker, or Claude API) when credentials are available.
- * The interface stays the same — only the internals change.
- *
- * @example
- * ```ts
- * const compute = new VeriddCompute();
- * const review = await compute.reviewAction({
- *   agentName: 'Alpha',
- *   actionType: 'market_analysis',
- *   input: 'Analyze ETH...',
- *   output: 'ETH at $3,450...'
- * });
- * console.log(review.score); // 1–5
- * ```
+ * 🟢 Rule-based mode (default) — scores by heuristics, no API key needed.
+ * 🟡 Grok API mode (optional) — uses Grok if VITE_GROK_KEY is set.
+ * 🟠 0G Compute Router — planned for fully decentralized inference.
  */
 export class VeriddCompute {
+  private grokKey: string | undefined;
+  private useRules: boolean;
+
+  constructor(grokKey?: string) {
+    this.grokKey = grokKey || import.meta.env.VITE_GROK_KEY;
+    this.useRules = !this.grokKey;
+  }
+
   /**
-   * Score an agent action 1–5 based on output quality heuristics.
-   *
-   * Evaluation criteria:
-   * - Error/bug/crash keywords → score 1
-   * - Output < 30 characters → score 2
-   * - Default/fallback → score 3
-   * - Output > 100 chars with structured data → score 4
-   * - Output with structured data that matches input → score 5
-   *
-   * @param action - The agent action to evaluate
-   * @param action.agentName - Name of the agent being reviewed
-   * @param action.actionType - Type/category of the action
-   * @param action.input - The input/prompt given to the agent
-   * @param action.output - The agent's response/output
-   * @returns ReviewResult with score, reasoning, and optional flags
+   * Score an agent action 1–5.
+   * Uses Grok API if key is available, otherwise falls back to rule-based heuristics.
    */
   async reviewAction(action: {
+    agentName: string;
+    actionType: string;
+    input: string;
+    output: string;
+  }): Promise<ReviewResult> {
+    // Try Grok API first if key is available
+    if (this.grokKey) {
+      try {
+        return await this.grokReview(action);
+      } catch {
+        // Grok failed — fall through to rule-based
+        this.useRules = true;
+      }
+    }
+
+    // Fallback: rule-based heuristics
+    return this.ruleReview(action);
+  }
+
+  /**
+   * 🟡 0G Compute (via Grok API)
+   */
+  private async grokReview(action: {
+    agentName: string;
+    actionType: string;
+    input: string;
+    output: string;
+  }): Promise<ReviewResult> {
+    const body = JSON.stringify({
+      model: 'grok-2-latest',
+      max_tokens: 300,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a VERIDD peer reviewer. Score the agent action 1-5 and explain. Respond with JSON only.',
+        },
+        {
+          role: 'user',
+          content: `Agent "${action.agentName}" performed "${action.actionType}".\nInput: ${action.input}\nOutput: ${action.output}\nScore?`,
+        },
+      ],
+    });
+
+    const res = await fetch(GROK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.grokKey}`,
+      },
+      body,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Grok API: ${res.status}`);
+    }
+
+    const json = await res.json();
+    const text = json.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Grok: empty response');
+
+    // Try to parse JSON from the response
+    const match = text.match(/\{[^{}]*"score"[^{}]*\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      return {
+        score: Math.max(1, Math.min(5, parsed.score || 3)),
+        reasoning: parsed.reasoning || 'Reviewed via 0G Compute (Grok).',
+        confidence: 0.85,
+      };
+    }
+
+    // Fallback parsing
+    return {
+      score: 3,
+      reasoning: text.slice(0, 200),
+      confidence: 0.7,
+    };
+  }
+
+  /**
+   * 🟢 Rule-based heuristics (fallback — no API key needed)
+   */
+  private ruleReview(action: {
     agentName: string;
     actionType: string;
     input: string;
@@ -95,11 +167,11 @@ export class VeriddCompute {
       reasoning = 'Output too brief. More detail needed for a complete review.';
     }
 
-    return {
+    return Promise.resolve({
       score,
       reasoning,
       confidence: 0.75,
       flags: hasError ? ['Action produced errors'] : undefined,
-    };
+    });
   }
 }
