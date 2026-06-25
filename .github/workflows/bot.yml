@@ -1,0 +1,33 @@
+name: VERIDD Agent Bot
+
+on:
+  schedule:
+    # Every 30 minutes — enough to show continuous on-chain activity
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # Manual trigger from GitHub UI
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: runner
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run bot cycle
+        run: node bot-once.js
+        env:
+          PRIVATE_KEY: ${{ secrets.BOT_PRIVATE_KEY }}
+          GROQ_KEY: ${{ secrets.GROQ_KEY }}
+          NAME: Veridd-Bot-Alpha

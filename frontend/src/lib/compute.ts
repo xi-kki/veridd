@@ -6,7 +6,7 @@
  * changing the rest of the pipeline.
  *
  * 🟢 MVP: Rule-based heuristics (fast, no API key needed)
- * 🟡 NOW: Grok API (optional — set VITE_GROK_KEY in .env)
+ * 🟡 NOW: Groq API (optional — set VITE_GROQ_KEY in .env)
  * 🟠 ROADMAP: 0G Compute Router (decentralized inference)
  * 🔵 FUTURE: 0G Compute ZK/TEE (verifiable inference)
  *
@@ -16,11 +16,11 @@
  *   - Structured data ([, {) + input match → score 5
  *   - Very long output with data but no input match → score 4
  *   - Fallthrough/default → score 3 (met expectations)
- *   - Grok API unreachable → falls back to rule-based
- *   - Invalid JSON from Grok → falls back to rule-based
+ *   - Groq API unreachable → falls back to rule-based
+ *   - Invalid JSON from Groq → falls back to rule-based
  */
 
-const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export interface ReviewResult {
   /** Numeric score from 1 (worst) to 5 (best). */
@@ -37,21 +37,21 @@ export interface ReviewResult {
  * VERIDD Compute Engine
  *
  * 🟢 Rule-based mode (default) — scores by heuristics, no API key needed.
- * 🟡 Grok API mode (optional) — uses Grok if VITE_GROK_KEY is set.
+ * 🟡 Groq API mode (optional) — uses Groq if VITE_GROQ_KEY is set.
  * 🟠 0G Compute Router — planned for fully decentralized inference.
  */
 export class VeriddCompute {
-  private grokKey: string | undefined;
+  private groqKey: string | undefined;
   private useRules: boolean;
 
-  constructor(grokKey?: string) {
-    this.grokKey = grokKey || import.meta.env.VITE_GROK_KEY;
-    this.useRules = !this.grokKey;
+  constructor(groqKey?: string) {
+    this.groqKey = groqKey || import.meta.env.VITE_GROQ_KEY;
+    this.useRules = !this.groqKey;
   }
 
   /**
    * Score an agent action 1–5.
-   * Uses Grok API if key is available, otherwise falls back to rule-based heuristics.
+   * Uses Groq API if key is available, otherwise falls back to rule-based heuristics.
    */
   async reviewAction(action: {
     agentName: string;
@@ -59,31 +59,27 @@ export class VeriddCompute {
     input: string;
     output: string;
   }): Promise<ReviewResult> {
-    // Try Grok API first if key is available
-    if (this.grokKey) {
+    if (this.groqKey) {
       try {
-        return await this.grokReview(action);
+        return await this.groqReview(action);
       } catch {
-        // Grok failed — fall through to rule-based
         this.useRules = true;
       }
     }
-
-    // Fallback: rule-based heuristics
     return this.ruleReview(action);
   }
 
   /**
-   * 🟡 0G Compute (via Grok API)
+   * 🟡 0G Compute (via Groq API — llama3-70b)
    */
-  private async grokReview(action: {
+  private async groqReview(action: {
     agentName: string;
     actionType: string;
     input: string;
     output: string;
   }): Promise<ReviewResult> {
     const body = JSON.stringify({
-      model: 'grok-2-latest',
+      model: 'llama3-70b-8192',
       max_tokens: 300,
       messages: [
         {
@@ -98,35 +94,33 @@ export class VeriddCompute {
       ],
     });
 
-    const res = await fetch(GROK_API_URL, {
+    const res = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.grokKey}`,
+        Authorization: `Bearer ${this.groqKey}`,
       },
       body,
     });
 
     if (!res.ok) {
-      throw new Error(`Grok API: ${res.status}`);
+      throw new Error(`Groq API: ${res.status}`);
     }
 
     const json = await res.json();
     const text = json.choices?.[0]?.message?.content;
-    if (!text) throw new Error('Grok: empty response');
+    if (!text) throw new Error('Groq: empty response');
 
-    // Try to parse JSON from the response
     const match = text.match(/\{[^{}]*"score"[^{}]*\}/);
     if (match) {
       const parsed = JSON.parse(match[0]);
       return {
         score: Math.max(1, Math.min(5, parsed.score || 3)),
-        reasoning: parsed.reasoning || 'Reviewed via 0G Compute (Grok).',
+        reasoning: parsed.reasoning || 'Reviewed via 0G Compute (Groq).',
         confidence: 0.85,
       };
     }
 
-    // Fallback parsing
     return {
       score: 3,
       reasoning: text.slice(0, 200),

@@ -10,7 +10,7 @@
  *   - 0G Chain (Galileo) for on-chain proofs
  *
  * Usage:
- *   node agent-bot.js <private-key> --name "Alpha" --grok-key <key>
+ *   node agent-bot.js <private-key> --name "Alpha" --groq-key <key>
  *
  * Environment:
  *   CONTRACT    - VeriddReputation address
@@ -46,7 +46,7 @@ const CONTRACT_ABI = [
 
 // ───── Grok AI ─────────────────────────────────────────────────────
 
-const GROK_API = 'https://api.x.ai/v1/chat/completions';
+const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
 
 /**
  * execute0GCompute — AI layer for VERIDD
@@ -59,13 +59,13 @@ const GROK_API = 'https://api.x.ai/v1/chat/completions';
  * can be swapped to 0G Compute without changing the rest.
  */
 async function agentThink(prompt) {
-  const apiKey = process.env.GROK_KEY;
+  const apiKey = process.env.GROQ_KEY;
   if (!apiKey) {
     return fallbackResponse(prompt);
   }
 
   const data = JSON.stringify({
-    model: 'grok-2-latest',
+    model: 'llama3-70b-8192',
     max_tokens: 500,
     messages: [
       {
@@ -79,8 +79,8 @@ async function agentThink(prompt) {
   return new Promise((resolve, reject) => {
     const req = https.request(
       {
-        hostname: 'api.x.ai',
-        path: '/v1/chat/completions',
+        hostname: 'api.groq.com',
+        path: '/openai/v1/chat/completions',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,11 +96,11 @@ async function agentThink(prompt) {
             if (json.choices && json.choices[0]?.message?.content) {
               resolve(json.choices[0].message.content.trim());
             } else {
-              console.warn(`[Grok] API error: ${JSON.stringify(json).slice(0, 200)}`);
+              console.warn(`[Groq] API error: ${JSON.stringify(json).slice(0, 200)}`);
               resolve(fallbackResponse(prompt));
             }
           } catch (e) {
-            console.warn(`[Grok] Parse error, using fallback: ${body.slice(0, 100)}`);
+            console.warn(`[Groq] Parse error, using fallback: ${body.slice(0, 100)}`);
             resolve(fallbackResponse(prompt));
           }
         });
@@ -108,7 +108,7 @@ async function agentThink(prompt) {
     );
 
     req.on('error', (err) => {
-      console.warn(`[Grok] Network error, using fallback: ${err.message}`);
+      console.warn(`[Groq] Network error, using fallback: ${err.message}`);
       resolve(fallbackResponse(prompt));
     });
 
@@ -315,7 +315,7 @@ Respond with a JSON object:
     actionType,
     input: actionInput,
     output: actionOutput,
-    model: 'grok-2-latest',
+    model: 'llama3-70b-8192',
     infrastructure: '0G-powered agent',
     timestamp: Date.now(),
     cycle: Math.floor(Date.now() / 30000),
