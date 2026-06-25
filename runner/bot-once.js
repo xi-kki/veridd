@@ -193,14 +193,20 @@ async function main() {
   let agentId;
   try {
     const ids = await contract.getAgentsByOwner(wallet.address);
-    if (ids.length > 0) {
+    if (ids !== undefined && ids.length > 0) {
       agentId = Number(ids[0]);
-      const agent = await contract.getAgent(agentId);
-      log('🤖', `Reusing agent #${agentId}: ${agent.name}`);
+      try {
+        const agent = await contract.getAgent(agentId);
+        log('🤖', `Reusing agent #${agentId}: ${agent.name}`);
+      } catch {
+        log('⚠️', `Agent #${agentId} found but getAgent failed, using ID anyway`);
+      }
     }
-  } catch {}
+  } catch {
+    log('⚠️', 'getAgentsByOwner failed, will create new agent');
+  }
 
-  if (!agentId) {
+  if (agentId === undefined || agentId === null) {
     const name = process.env.NAME || `Bot-${Math.random().toString(36).slice(2, 6)}`;
     log('🆕', `Creating agent: ${name}...`);
 
@@ -223,11 +229,14 @@ async function main() {
         const parsed = contract.interface.parseLog(logEntry);
         if (parsed?.name === 'AgentCreated') {
           agentId = Number(parsed.args.agentId);
-          log('✅', `Agent #${agentId} created | tx: ${tx.hash.slice(0, 18)}...`);
           break;
         }
       } catch {}
     }
+    if (agentId === undefined || agentId === null) {
+      try { agentId = Number(await contract.nextAgentId()) - 1; } catch {}
+    }
+    log('✅', `Agent #${agentId !== undefined && agentId !== null ? agentId : '??'} created | tx: ${tx.hash.slice(0, 18)}...`);
   }
 
   if (agentId === undefined || agentId === null) {
