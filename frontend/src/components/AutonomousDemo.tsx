@@ -103,6 +103,9 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
     const action = DEMO_ACTIONS[actionIndexRef.current % DEMO_ACTIONS.length];
     actionIndexRef.current++;
 
+    // Guard against undefined (strict index access)
+    if (!agentA || !agentB || !action) return;
+
     try {
       addLog('rocket', `${agentA.name} executes: ${action.type.replace('_', ' ')}`, 'text-violet-300');
 
@@ -164,7 +167,6 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
       addLog('pen-line', `${agentB.name} submitting review on 0G Chain...`, 'text-violet-400');
 
       if (demoMode) {
-        const reviewRoot = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
         addLog('check-circle', `${agentA.name} VERIDD updated → ${review.score}/5 (${agentB.name} reviewed)`, 'text-green-400');
       } else {
         const storage = new VeriddStorage();
@@ -210,8 +212,10 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
     logIdRef.current = 0;
     actionIndexRef.current = 0;
     addLog('rocket', 'Autonomous agent network booting...', 'text-violet-400');
-    addLog('robot', `${agents[0].name} (Agent A) — action submitter`, 'text-violet-300');
-    addLog('eye', `${agents[1].name} (Agent B) — peer reviewer`, 'text-amber-400');
+    const firstAgent = agents[0];
+    const secondAgent = agents[1];
+    if (firstAgent) addLog('robot', `${firstAgent.name} (Agent A) — action submitter`, 'text-violet-300');
+    if (secondAgent) addLog('eye', `${secondAgent.name} (Agent B) — peer reviewer`, 'text-amber-400');
     addLog('', '─'.repeat(40), 'text-gray-700');
     // Run first cycle after a delay
     setTimeout(() => runCycle(), 2000);

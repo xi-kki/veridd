@@ -40,6 +40,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const [btnBlink, setBtnBlink] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const connectingRef = useRef(false);
   const [particles, setParticles] = useState<
     Array<{
       id: number;
@@ -69,7 +70,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
   // ───── Space objects (stable across renders) ─────────────────────────
   const spaceObjects = useMemo(() => {
-    const types = ['asteroid', 'planet', 'comet'] as const;
+    const types: Array<'asteroid' | 'planet' | 'comet'> = ['asteroid', 'planet', 'comet'];
     const colors = {
       planet: ['#7c3aed', '#a855f7', '#22d3ee', '#f59e0b'],
       asteroid: ['#6b7280', '#9ca3af', '#8b5cf6'],
@@ -105,7 +106,7 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
         y: 0,
         vx: Math.cos(a) * s,
         vy: Math.sin(a) * s - 1,
-        color: colors[Math.floor(Math.random() * 6)],
+        color: colors[Math.floor(Math.random() * 6)] || '#a855f7',
         size: 2 + Math.random() * 4,
         life: 1,
       });
@@ -351,18 +352,26 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
 
   // ───── Connect handler ───────────────────────────────────────────────
   const handleConnect = useCallback(() => {
+    // Guard against multiple rapid clicks
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+
     setCelebrating(true);
     spawnCelebration();
+
+    // Show connecting state immediately, trigger MetaMask after celebration
     setTimeout(() => {
       setCelebrating(false);
       setConnecting(true);
+      // MetaMask pops up while ticker animates
+      onConnect();
       setTimeout(() => {
         setConnecting(false);
         hoverStreakRef.current = 0;
         attractedRef.current = false;
         setCaught(false);
-        onConnect();
-      }, 2500);
+        connectingRef.current = false;
+      }, 2000);
     }, 1200);
   }, [onConnect, spawnCelebration]);
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { VeriddBadge } from './VeriddBadge';
 import { generatePixelAvatar } from '../lib/pixel-avatar';
 

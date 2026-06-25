@@ -115,8 +115,11 @@ export class VeriddChain {
           }
         }
       } else if (switchError.code === 4001) {
-        console.warn('Network switch rejected, proceeding with current network...');
-        // Don't throw — let the user switch manually
+        throw new Error(
+          'Please switch to 0G Galileo Testnet in MetaMask (Chain ID: 16602).\n' +
+          'RPC: https://evmrpc-testnet.0g.ai\n' +
+          'Or add it manually via Settings → Networks → Add Network.'
+        );
       } else {
         console.warn(
           'Network switch failed, attempting connection on current network:',

@@ -127,7 +127,8 @@ export const LiveNetworkFeed: React.FC<Props> = ({ contractAddress, rpcUrl, demo
       ];
       for (const [agent, score, tx] of existingReviews) {
         if (!running) return;
-        const color = score >= 4 ? 'text-emerald-400' : score >= 3 ? 'text-amber-400' : 'text-red-400';
+        const s = score as number;
+        const color = s >= 4 ? 'text-emerald-400' : s >= 3 ? 'text-amber-400' : 'text-red-400';
         addEntry('bar-chart', `${agent} scored: ${score}/5`, color, tx);
         await delay(600);
       }
@@ -161,7 +162,8 @@ export const LiveNetworkFeed: React.FC<Props> = ({ contractAddress, rpcUrl, demo
         await delay(3000);
 
         // New review
-        const color = score >= 4 ? 'text-emerald-400' : score >= 3 ? 'text-amber-400' : 'text-red-400';
+        const s = typeof score === 'number' ? score : Number(score);
+        const color = s >= 4 ? 'text-emerald-400' : s >= 3 ? 'text-amber-400' : 'text-red-400';
         addEntry('bar-chart', `${agent} scored: ${score}/5`, color, generateDemoTx());
         setStats(s => ({ ...s, reviews: s.reviews + 1 }));
 

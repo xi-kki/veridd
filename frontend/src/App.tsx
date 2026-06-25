@@ -36,7 +36,7 @@ function App() {
       const addr = await c.connect();
       setChain(c);
       setAddress(addr);
-      loadAgents(c);
+      // Agents load via useEffect when address/chain state updates
     } catch (err: any) {
       setError(err.message);
     }
@@ -76,8 +76,10 @@ function App() {
   );
 
   useEffect(() => {
-    if (address && chain) loadAgents();
-  }, [address]);
+    if (address && chain) {
+      loadAgents();
+    }
+  }, [address, chain, loadAgents]);
 
   return (
     <div className="min-h-screen bg-gray-950">
