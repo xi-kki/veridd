@@ -230,7 +230,7 @@ async function main() {
     }
   }
 
-  if (!agentId) {
+  if (agentId === undefined || agentId === null) {
     log('❌', 'Could not create/find agent');
     process.exit(1);
   }
