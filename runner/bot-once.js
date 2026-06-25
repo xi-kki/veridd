@@ -54,7 +54,7 @@ async function agentThink(prompt) {
   }
 
   const data = JSON.stringify({
-    model: 'mixtral-8x7b-32768',
+    model: 'llama-3.3-70b-versatile',
     max_tokens: 500,
     messages: [
       {
@@ -242,19 +242,26 @@ async function main() {
 
   let actionOutput = '';
   try {
-    const grokResult = await agentThink(`You are an AI agent performing "${actionType}". Generate a realistic result with specific data. Respond with JSON: {"output": "your detailed analysis"}`);
-    const parsed = JSON.parse(grokResult);
+    const groqResult = await agentThink(`You are an AI agent performing "${actionType}". Generate a realistic result with specific data. Respond with JSON: {"output": "your detailed analysis"}`);
+    const parsed = JSON.parse(groqResult);
     actionOutput = parsed.output || `${actionType} completed.`;
   } catch {
     actionOutput = `${actionType} completed. Cycle ${Math.floor(Date.now() / 30000)}. No anomalies.`;
   }
 
-  const actionData = { agentId: String(agentId), agentWallet: wallet.address, actionType, output: actionOutput, model: 'llama3-70b-8192', infrastructure: '0G-powered agent', timestamp: Date.now() };
+  const actionData = { agentId: String(agentId), agentWallet: wallet.address, actionType, output: actionOutput, model: 'llama-3.3-70b-versatile', infrastructure: '0G-powered agent', timestamp: Date.now() };
   const actionStorage = await storeOn0G(actionData, `action_${agentId}_${Date.now()}.json`);
 
+  if (!actionStorage || !actionStorage.root) {
+    log('❌', 'Storage root missing, aborting submit');
+    return;
+  }
+
+  log('⛓️', `Submitting to 0G Chain (root: ${actionStorage.root.slice(0, 16)}...)`);
   const tx = await contract.submitAction(actionType, actionStorage.root, {
     gasLimit: 300000
   });
+  log('⏳', `Tx sent: ${tx.hash.slice(0, 18)}..., waiting for receipt...`);
   const receipt = await tx.wait();
   log('✅', `Action submitted | tx: ${tx.hash.slice(0, 18)}... | gas: ${receipt.gasUsed.toString()}`);
 

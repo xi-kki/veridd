@@ -65,7 +65,7 @@ async function agentThink(prompt) {
   }
 
   const data = JSON.stringify({
-    model: 'mixtral-8x7b-32768',
+    model: 'llama-3.3-70b-versatile',
     max_tokens: 500,
     messages: [
       {
@@ -241,7 +241,7 @@ async function createOrGetAgent(wallet, contract, name) {
     capabilities: ['market_analysis', 'data_analysis', 'risk_assessment', 'peer_review'],
     owner: wallet.address,
     createdAt: Date.now(),
-    model: 'mixtral-8x7b-32768',
+    model: 'llama-3.3-70b-versatile',
     infrastructure: '0G Chain + 0G Storage',
   };
 
@@ -252,7 +252,9 @@ async function createOrGetAgent(wallet, contract, name) {
     ? `0g://${storageResult.root}`
     : `veridd://agents/${name.toLowerCase().replace(/\s+/g, '-')}`;
 
-  const tx = await contract.createAgent(name, description, metadataURI);
+  const tx = await contract.createAgent(name, description, metadataURI, {
+    gasLimit: 300000
+  });
   const receipt = await tx.wait();
 
   for (const logEntry of receipt.logs) {
@@ -315,7 +317,7 @@ Respond with a JSON object:
     actionType,
     input: actionInput,
     output: actionOutput,
-    model: 'mixtral-8x7b-32768',
+    model: 'llama-3.3-70b-versatile',
     infrastructure: '0G-powered agent',
     timestamp: Date.now(),
     cycle: Math.floor(Date.now() / 30000),
@@ -326,7 +328,9 @@ Respond with a JSON object:
 
   // Step 3: Submit Merkle root to 0G Chain
   log('⛓️', `Submitting to 0G Chain (Galileo)...`);
-  const tx = await contract.submitAction(actionType, storageResult.root);
+  const tx = await contract.submitAction(actionType, storageResult.root, {
+    gasLimit: 300000
+  });
   const receipt = await tx.wait();
   log('✅', `Action submitted | tx: ${tx.hash.slice(0, 18)}... | gas: ${receipt.gasUsed.toString()}`);
 
@@ -391,7 +395,7 @@ Scoring guide:
           reviewerWallet: wallet.address,
           score,
           reasoning,
-          model: 'mixtral-8x7b-32768',
+          model: 'llama-3.3-70b-versatile',
           infrastructure: '0G-powered agent',
           timestamp: Date.now(),
         };
@@ -409,7 +413,8 @@ Scoring guide:
           score,
           actionData.actionStorageRoot,
           reviewStorage.root,
-          reasoning.slice(0, 100)
+          reasoning.slice(0, 100),
+          { gasLimit: 300000 }
         );
         await tx.wait();
         log('✅', `Review submitted for action #${aid} | score: ${score}/5`);
