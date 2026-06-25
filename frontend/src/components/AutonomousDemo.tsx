@@ -78,10 +78,13 @@ const LogIcon: React.FC<{ name: string }> = ({ name }) => {
 export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, demoMode }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [running, setRunning] = useState(false);
+  const [hasNewLogs, setHasNewLogs] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const logIdRef = useRef(0);
   const actionIndexRef = useRef(0);
   const runningRef = useRef(false);
+  const isNearBottomRef = useRef(true);
 
   const addLog = useCallback((iconName: string, text: string, color?: string) => {
     const now = new Date();
@@ -89,8 +92,33 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
     setLogs(prev => [...prev, { id: logIdRef.current++, iconName, text, time, color }]);
   }, []);
 
-  useEffect(() => {
+  // Auto-scroll only if user is near the bottom of the feed
+  const isNearBottom = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    const threshold = 60;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setHasNewLogs(false);
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    isNearBottomRef.current = isNearBottom();
+    if (isNearBottomRef.current) {
+      setHasNewLogs(false);
+    }
+  }, [isNearBottom]);
+
+  useEffect(() => {
+    if (isNearBottomRef.current) {
+      logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setHasNewLogs(false);
+    } else {
+      setHasNewLogs(true);
+    }
   }, [logs]);
 
   // ───── Autonomous Loop ─────
@@ -268,23 +296,43 @@ export const AutonomousDemo: React.FC<Props> = ({ chain, agents, onScoreUpdate, 
       </div>
 
       {/* Log Feed */}
-      <div className="px-5 py-4 max-h-[400px] overflow-y-auto font-mono text-[12px] leading-relaxed bg-gray-950/50">
-        {logs.length === 0 ? (
-          <div className="text-gray-600 text-center py-8 text-xs">
-            Press Start Demo to run the autonomous agent network
-          </div>
-        ) : (
-          logs.map((log) => (
-            <div key={log.id} className="flex items-start gap-2 py-0.5 group">
-              <span className="flex-shrink-0 w-4 flex items-center justify-center mt-0.5">
-                <LogIcon name={log.iconName} />
-              </span>
-              <span className="text-gray-500 w-16 flex-shrink-0 text-[11px]">{log.time}</span>
-              <span className={`${log.color || 'text-gray-400'} leading-relaxed`}>{log.text}</span>
-            </div>
-          ))
+      <div className="relative">
+        {/* Scroll anchor pill when scrolled up with new logs */}
+        {hasNewLogs && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute -top-3 left-1/2 -translate-x-1/2 z-10
+              px-3 py-1 rounded-full text-[11px] font-medium
+              bg-violet-600/80 hover:bg-violet-500 text-white
+              shadow-lg shadow-violet-900/40 transition-all
+              animate-bounce-subtle cursor-pointer"
+          >
+            ↓ New activity
+          </button>
         )}
-        <div ref={logsEndRef} />
+
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="px-5 py-4 max-h-[480px] overflow-y-auto font-mono text-[12px] leading-relaxed bg-gray-950/50"
+        >
+          {logs.length === 0 ? (
+            <div className="text-gray-600 text-center py-8 text-xs">
+              Press Start Demo to run the autonomous agent network
+            </div>
+          ) : (
+            logs.map((log) => (
+              <div key={log.id} className="flex items-start gap-2 py-0.5 group">
+                <span className="flex-shrink-0 w-4 flex items-center justify-center mt-0.5">
+                  <LogIcon name={log.iconName} />
+                </span>
+                <span className="text-gray-500 w-16 flex-shrink-0 text-[11px]">{log.time}</span>
+                <span className={`${log.color || 'text-gray-400'} leading-relaxed`}>{log.text}</span>
+              </div>
+            ))
+          )}
+          <div ref={logsEndRef} />
+        </div>
       </div>
     </div>
   );

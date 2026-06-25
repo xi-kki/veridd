@@ -33,6 +33,7 @@ export default {
         shimmer: 'shimmer 3s ease-in-out infinite',
         twinkle: 'twinkle 3s ease-in-out infinite',
         'gradient-slide': 'gradientSlide 3s ease-in-out infinite',
+        'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
       },
       keyframes: {
         slideUp: {
@@ -51,6 +52,10 @@ export default {
         gradientSlide: {
           '0%': { backgroundPosition: '0% 50%' },
           '100%': { backgroundPosition: '200% 50%' },
+        },
+        bounceSubtle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
         },
       },
     },
