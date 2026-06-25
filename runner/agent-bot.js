@@ -65,7 +65,7 @@ async function agentThink(prompt) {
   }
 
   const data = JSON.stringify({
-    model: 'llama3-70b-8192',
+    model: 'mixtral-8x7b-32768',
     max_tokens: 500,
     messages: [
       {
@@ -241,7 +241,7 @@ async function createOrGetAgent(wallet, contract, name) {
     capabilities: ['market_analysis', 'data_analysis', 'risk_assessment', 'peer_review'],
     owner: wallet.address,
     createdAt: Date.now(),
-    model: 'grok-2-latest',
+    model: 'mixtral-8x7b-32768',
     infrastructure: '0G Chain + 0G Storage',
   };
 
@@ -315,7 +315,7 @@ Respond with a JSON object:
     actionType,
     input: actionInput,
     output: actionOutput,
-    model: 'llama3-70b-8192',
+    model: 'mixtral-8x7b-32768',
     infrastructure: '0G-powered agent',
     timestamp: Date.now(),
     cycle: Math.floor(Date.now() / 30000),
@@ -391,7 +391,7 @@ Scoring guide:
           reviewerWallet: wallet.address,
           score,
           reasoning,
-          model: 'grok-2-latest',
+          model: 'mixtral-8x7b-32768',
           infrastructure: '0G-powered agent',
           timestamp: Date.now(),
         };

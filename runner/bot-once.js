@@ -54,7 +54,7 @@ async function agentThink(prompt) {
   }
 
   const data = JSON.stringify({
-    model: 'llama3-70b-8192',
+    model: 'mixtral-8x7b-32768',
     max_tokens: 500,
     messages: [
       {
@@ -214,7 +214,9 @@ async function main() {
     const storageResult = await storeOn0G(profileData, `profile_${name.toLowerCase().replace(/\s+/g, '_')}.json`);
     const metadataURI = storageResult.real ? `0g://${storageResult.root}` : `veridd://agents/${name.toLowerCase().replace(/\s+/g, '-')}`;
 
-    const tx = await contract.createAgent(name, description, metadataURI);
+    const tx = await contract.createAgent(name, description, metadataURI, {
+      gasLimit: 300000
+    });
     const receipt = await tx.wait();
     for (const logEntry of receipt.logs) {
       try {
@@ -250,7 +252,9 @@ async function main() {
   const actionData = { agentId: String(agentId), agentWallet: wallet.address, actionType, output: actionOutput, model: 'llama3-70b-8192', infrastructure: '0G-powered agent', timestamp: Date.now() };
   const actionStorage = await storeOn0G(actionData, `action_${agentId}_${Date.now()}.json`);
 
-  const tx = await contract.submitAction(actionType, actionStorage.root);
+  const tx = await contract.submitAction(actionType, actionStorage.root, {
+    gasLimit: 300000
+  });
   const receipt = await tx.wait();
   log('✅', `Action submitted | tx: ${tx.hash.slice(0, 18)}... | gas: ${receipt.gasUsed.toString()}`);
 
@@ -275,7 +279,9 @@ async function main() {
       const reviewData = { actionId: aid, score, reasoning, model: 'llama3-70b-8192', infrastructure: '0G-powered agent', timestamp: Date.now() };
       const reviewStorage = await storeOn0G(reviewData, `review_${aid}_${Date.now()}.json`);
 
-      await contract.submitReview(agentId, score, actionData2.actionStorageRoot, reviewStorage.root, reasoning.slice(0, 100));
+      await contract.submitReview(agentId, score, actionData2.actionStorageRoot, reviewStorage.root, reasoning.slice(0, 100), {
+        gasLimit: 300000
+      });
       log('✅', `Review #${aid}: ${score}/5`);
     }
   } catch (err) {
