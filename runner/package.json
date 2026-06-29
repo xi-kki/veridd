@@ -8,7 +8,7 @@
     "bot": "node agent-bot.js"
   },
   "dependencies": {
-    "ethers": "^6.13.5"
+    "ethers": "^6.17.0"
   },
   "engines": {
     "node": ">=18"
