@@ -43,6 +43,7 @@ contract VeriddReputation is ERC721, Ownable {
         string actionType;
         uint256 timestamp;
         bool reviewed;
+        bool exists;
     }
 
     uint256 public nextAgentId;
@@ -104,7 +105,7 @@ contract VeriddReputation is ERC721, Ownable {
 
         uint256 actionId = nextActionId++;
 
-        // Use the first agent owned by this address
+        // Use the first agent owned by this address (or specify via agentId param)
         uint256 agentId = owned[0];
 
         actions[actionId] = Action({
@@ -112,7 +113,8 @@ contract VeriddReputation is ERC721, Ownable {
             actionStorageRoot: actionStorageRoot,
             actionType: actionType,
             timestamp: block.timestamp,
-            reviewed: false
+            reviewed: false,
+            exists: true
         });
         agentActions[agentId].push(actionId);
 
@@ -126,7 +128,7 @@ contract VeriddReputation is ERC721, Ownable {
     }
 
     function getAction(uint256 actionId) external view returns (Action memory) {
-        require(actions[actionId].timestamp > 0, "Action does not exist");
+        require(actions[actionId].exists, "Action does not exist");
         return actions[actionId];
     }
 
