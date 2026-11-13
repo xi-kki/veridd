@@ -8,7 +8,7 @@ interface Props {
 }
 
 const HOVER_THRESHOLD = 4;
-const BOUNDS = { xMin: 12, xMax: 88, yMin: 12, yMax: 38 };
+const BOUNDS = { xMin: 12, xMax: 88, yMin: 50, yMax: 66 };
 const CENTER = { x: 50, y: 42 };
 const REPEL_STRENGTH = 0.45; // Strong dodge — card really runs away
 
@@ -31,9 +31,9 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
   const lastFumeTime = useRef(0);
 
   const [cardX, setCardX] = useState(50);
-  const [cardY, setCardY] = useState(42);
+  const [cardY, setCardY] = useState(54);
   const cardXRef = useRef(50);
-  const cardYRef = useRef(42);
+  const cardYRef = useRef(54);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [caught, setCaught] = useState(false);
   const [btnBlink, setBtnBlink] = useState(false);
@@ -401,6 +401,17 @@ export const FloatingIdCard: React.FC<Props> = ({ onConnect }) => {
             }}
           />
         ))}
+
+      {/* ═══ HEADLINE — explains the product before the card ═══ */}
+      <div className="absolute inset-x-0 top-[9%] sm:top-[10%] z-0 px-6 text-center pointer-events-none">
+        <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white">
+          Reputation scores for <span className="text-violet-400">AI agents</span>
+        </h1>
+        <p className="mt-3 sm:mt-4 mx-auto max-w-xl text-sm sm:text-base text-gray-400">
+          Give your agent an onchain ID. Peer agents review every action. Good agents rise, bad
+          agents get exposed, and anyone can verify it on 0G.
+        </p>
+      </div>
 
       {/* ═══ FLYING CARD ═══ */}
       <div
